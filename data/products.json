@@ -1,0 +1,15 @@
+{
+  "note": "Placeholder. Replace with the 269-product Zoho export (All_Products), or use 'Import products' in the app. The single product below is the CW01.1 product named in SPEC.md.",
+  "products": [
+    {
+      "id": "insulux-fusion-c35-reinforced",
+      "name": "C35 Reinforced",
+      "fabricator": "Fusion",
+      "businessUnit": "Insulux",
+      "productCode": "C35 Reinforced",
+      "type": "Curtain Wall",
+      "sizeRange": "",
+      "standardPricing": 0
+    }
+  ]
+}

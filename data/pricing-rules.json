@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "source": "SPEC.md §3 (PRICING-FORMULAS.xlsx) and §4 open rules",
+  "settings": {
+    "rounding": "floor",
+    "gbpToAed": 5,
+    "eurToAed": 4.32,
+    "inothermDiscount": 0.45,
+    "curtainWallBondingRate": 1000,
+    "bondingDefault": "curtainWallPerSqm",
+    "glassAreaBasis": "full",
+    "glassDensityKgPerSqmPerMm": 2.5,
+    "defaultMarkupOther": 2.5,
+    "insuranceRate": 0.01,
+    "percentageBase": "subtotalBeforeDiscount",
+    "warnNegativeOtherCharges": true,
+    "warnBelowStandardPricing": true
+  },
+  "unconfirmed": [
+    "rounding",
+    "curtainWallBondingRate",
+    "bondingDefault",
+    "glassAreaBasis",
+    "glassDensityKgPerSqmPerMm",
+    "defaultMarkupOther",
+    "insuranceRate",
+    "percentageBase",
+    "warnNegativeOtherCharges",
+    "warnBelowStandardPricing"
+  ],
+  "rules": [
+    {
+      "id": "fusion-a",
+      "label": "Fusion – Series 1, B3710 Folding, F44 Fixed, C35 Curtain Wall",
+      "fabricator": "Fusion",
+      "keywords": ["Series 1", "B3710", "F44", "C35"],
+      "costMethod": "aedPerSqm",
+      "markup": 2.5,
+      "freight": { "type": "fixed", "value": 0 },
+      "otherCharges": 250,
+      "glassLine": true
+    },
+    {
+      "id": "fusion-b",
+      "label": "Fusion – Series 2, Series 3, B3800 Folding",
+      "fabricator": "Fusion",
+      "keywords": ["Series 2", "Series 3", "B3800"],
+      "costMethod": "aedPerSqm",
+      "markup": 2.85,
+      "freight": { "type": "fixed", "value": 0 },
+      "otherCharges": 250,
+      "glassLine": true
+    },
+    {
+      "id": "origin",
+      "label": "Origin",
+      "fabricator": "Origin",
+      "keywords": [],
+      "costMethod": "gbp",
+      "markup": 2.85,
+      "freight": { "type": "perPanel", "value": 1500 },
+      "otherCharges": 0,
+      "glassLine": true
+    },
+    {
+      "id": "hyline",
+      "label": "Hyline",
+      "fabricator": "Hyline",
+      "keywords": [],
+      "costMethod": "eur",
+      "markup": 2.5,
+      "freight": { "type": "fixed", "value": 5000 },
+      "otherCharges": 0,
+      "glassLine": true
+    },
+    {
+      "id": "otif",
+      "label": "OTIF",
+      "fabricator": "OTIF",
+      "keywords": [],
+      "costMethod": "eur",
+      "markup": 2.22,
+      "freight": { "type": "fixed", "value": 5000 },
+      "otherCharges": 0,
+      "glassLine": false
+    },
+    {
+      "id": "inotherm",
+      "label": "Inotherm",
+      "fabricator": "Inotherm",
+      "keywords": [],
+      "costMethod": "eurDiscounted",
+      "markup": 2.85,
+      "freight": { "type": "fixed", "value": 7500 },
+      "otherCharges": 1500,
+      "glassLine": true
+    },
+    {
+      "id": "kobbe",
+      "label": "Kobbe",
+      "fabricator": "Kobbe",
+      "keywords": [],
+      "costMethod": "eur",
+      "markup": 2.85,
+      "freight": { "type": "fixed", "value": 20000 },
+      "otherCharges": 0,
+      "glassLine": true
+    },
+    {
+      "id": "other",
+      "label": "Anything else (manual cost)",
+      "fabricator": "",
+      "keywords": [],
+      "costMethod": "manual",
+      "markup": 2.5,
+      "freight": { "type": "manual", "value": 0 },
+      "otherCharges": null,
+      "glassLine": true
+    }
+  ]
+}
