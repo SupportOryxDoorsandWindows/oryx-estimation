@@ -27,3 +27,9 @@ Settings edits and saved estimates persist in the browser (localStorage). Use Sa
 - `data/products.json` holds only the CW01.1 product. Import the full list with "Import products.json".
 - The Estimator/Manager switch controls markup editing. It is not access control; v1 has no login.
 - The §4 open rules show an "unconfirmed" badge until the business confirms them.
+
+## Temporary hosting (GitHub Pages)
+
+`.github/workflows/pages.yml` runs the tests, builds and deploys on every push to `main`.
+Enable it once in **Settings → Pages → Source: GitHub Actions**.
+A Pages site is public, even from a private repo, so anyone with the link can see the pricing rules.
