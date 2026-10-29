@@ -17,14 +17,14 @@ npm run dev    # http://localhost:5173
 | `src/engine/` | Pure pricing functions. No UI code. |
 | `src/ui/` | React screens: Estimate, Saved estimates, Settings |
 | `data/pricing-rules.json` | SPEC §3 rules and §4 open settings (seed defaults) |
-| `data/products.json` | Placeholder. Replace with the 269-product Zoho export. |
-| `reference/` | Put the requirements doc, pricing Excel and CW01.1 screenshots here. |
+| `data/products.json` | The 269 products from the Zoho All_Products export (image links omitted) |
+| `reference/` | `PRICING-FORMULAS.xlsx`. Its worked examples are checked in `src/engine/excel.test.ts`. |
 
 Settings edits and saved estimates persist in the browser (localStorage). Use Saved estimates → Export JSON to back them up.
 
 ## Known gaps
 
-- `data/products.json` holds only the CW01.1 product. Import the full list with "Import products.json".
+- Rules match on the product's Business Unit. 39 Fusion products (C50, C60, D44, F56, T60 and others) are not on the pricing sheet, so they use "Anything else" (manual cost, markup 2.5) until rules are added.
 - The Estimator/Manager switch controls markup editing. It is not access control; v1 has no login.
 - The §4 open rules show an "unconfirmed" badge until the business confirms them.
 

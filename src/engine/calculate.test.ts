@@ -10,7 +10,7 @@ const rules = rulesJson as PricingRules
 function cw011(): LineItemInput {
   return {
     ...blankLineItem(),
-    productId: 'insulux-fusion-c35-reinforced',
+    productId: '4543538000018465002', // Insulux · Fusion · C35 Reinforced
     ruleId: 'fusion-a',
     ref: 'CW01.1',
     widthMm: 4789,

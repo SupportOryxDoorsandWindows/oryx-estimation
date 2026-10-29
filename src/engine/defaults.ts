@@ -35,13 +35,13 @@ export function blankLineItem(): LineItemInput {
 
 const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
 
-/** Picks the SPEC §3 rule for a product; falls back to "other". */
+/** Picks the SPEC §3 rule from the product's Business Unit (its origin); falls back to "other". */
 export function matchRule(product: Product | undefined, rules: PricingRules): PricingRule {
   const other = rules.rules.find((r) => r.id === 'other') ?? rules.rules[rules.rules.length - 1]
   if (!product) return other
-  const fab = norm(product.fabricator)
+  const origin = norm(product.businessUnit)
   const text = norm(`${product.name} ${product.productCode} ${product.type}`)
-  const candidates = rules.rules.filter((r) => r.fabricator && norm(r.fabricator) === fab)
+  const candidates = rules.rules.filter((r) => r.fabricator && norm(r.fabricator) === origin)
   const byKeyword = candidates.find((r) => r.keywords.some((k) => text.includes(norm(k))))
   if (byKeyword) return byKeyword
   const noKeywords = candidates.find((r) => r.keywords.length === 0)

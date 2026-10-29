@@ -207,3 +207,5 @@ input[type='number'] { font-variant-numeric: tabular-nums; }
   background: var(--green-bg); color: var(--green); border: 0; border-radius: 8px; padding: 12px 16px; font-weight: 500;
 }
 .link-gap { margin-left: 14px; }
+.note { margin: 0; padding: 10px 12px; border-left: 3px solid var(--blue); background: var(--tint); border-radius: 0 8px 8px 0; font-size: 13px; }
+input[type='search'] { -webkit-appearance: none; }

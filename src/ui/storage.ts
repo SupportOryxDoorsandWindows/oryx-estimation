@@ -15,7 +15,8 @@ export type Role = 'estimator' | 'manager'
 
 const KEYS = {
   rules: 'oryx-est:rules',
-  products: 'oryx-est:products',
+  // v2: the full Zoho list. Older saves held a one-product placeholder.
+  products: 'oryx-est:products:v2',
   estimates: 'oryx-est:estimates',
   role: 'oryx-est:role',
 }

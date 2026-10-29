@@ -37,8 +37,10 @@ export interface PricingRules {
   rules: PricingRule[]
 }
 
+/** One row of the Zoho All_Products export. Business Unit is the origin (Fusion, Origin, Hyline…). */
 export interface Product {
   id: string
+  oryxCode?: string
   name: string
   fabricator: string
   businessUnit: string
@@ -46,6 +48,8 @@ export interface Product {
   type: string
   sizeRange: string
   standardPricing: number
+  installDays?: number
+  remarks?: string
 }
 
 export interface Accessory {

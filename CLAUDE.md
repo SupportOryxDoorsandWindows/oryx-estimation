@@ -5,7 +5,7 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 ## Source of truth
 - `SPEC.md`: formulas, pricing rules and open settings. Follow it exactly. Never invent pricing rules.
 - `reference/`: the original requirements doc, the pricing Excel, the product list and screenshots of record CW01.1.
-- `data/products.json`: the 269 products exported from Zoho (All_Products).
+- `data/products.json`: the 269 products exported from Zoho (All_Products). Business Unit is the origin used for pricing rules; Fabricator is the maker.
 
 ## Stack
 - Vite + React + TypeScript. No backend for v1.
