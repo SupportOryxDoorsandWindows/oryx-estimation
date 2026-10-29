@@ -1,10 +1,9 @@
 import type { PricingRule, PricingRules, Settings } from '../engine/types'
-import { Field, NumberInput, Section, TextInput } from './fields'
+import { Card, Field, NumberInput, TextInput } from './fields'
 
 interface Props {
   rules: PricingRules
   onChange: (r: PricingRules) => void
-  onReset: () => void
 }
 
 const numericSettings: { key: keyof Settings; label: string }[] = [
@@ -17,7 +16,7 @@ const numericSettings: { key: keyof Settings; label: string }[] = [
   { key: 'insuranceRate', label: 'Insurance rate (0–1)' },
 ]
 
-export function SettingsScreen({ rules, onChange, onReset }: Props) {
+export function SettingsScreen({ rules, onChange }: Props) {
   const s = rules.settings
   const unconfirmed = new Set<string>(rules.unconfirmed)
   const setS = <K extends keyof Settings>(k: K, v: Settings[K]) => onChange({ ...rules, settings: { ...s, [k]: v } })
@@ -25,8 +24,8 @@ export function SettingsScreen({ rules, onChange, onReset }: Props) {
     onChange({ ...rules, rules: rules.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)) })
 
   return (
-    <div className="form">
-      <Section title="Settings">
+    <div className="stack">
+      <Card title="Calculation settings" aside="Editable without code changes">
         <div className="grid">
           <Field label="Rounding" badge={unconfirmed.has('rounding')}>
             <select value={s.rounding} onChange={(e) => setS('rounding', e.target.value as Settings['rounding'])}>
@@ -58,13 +57,14 @@ export function SettingsScreen({ rules, onChange, onReset }: Props) {
             </select>
           </Field>
         </div>
-        <p className="meta">
+        <p className="muted small">
           Glass area uses the full item area. Insurance, duties and discount % use the subtotal before discount. Both are unconfirmed (SPEC §4).
         </p>
-      </Section>
+      </Card>
 
-      <Section title="Pricing rules by origin">
-        <table className="rules">
+      <Card title="Pricing rules by origin" aside="SPEC §3">
+        <div className="table-wrap">
+        <table className="table rules">
           <thead>
             <tr><th>Origin</th><th>Markup</th><th>Freight (AED)</th><th>Freight basis</th><th>Other default (AED)</th></tr>
           </thead>
@@ -84,8 +84,8 @@ export function SettingsScreen({ rules, onChange, onReset }: Props) {
             ))}
           </tbody>
         </table>
-        <button type="button" className="secondary" onClick={onReset}>Reset to SPEC defaults</button>
-      </Section>
+        </div>
+      </Card>
     </div>
   )
 }

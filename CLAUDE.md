@@ -21,9 +21,10 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - Currency is AED, with thousands separators and no decimals in the UI.
 
 ## Design
-- Oryx Blue #022A3A on white, silver #A9A9A9 for borders, black body text. No other colours.
-- Calibri or the system sans-serif font. Minimal layout with plenty of white space.
-- Sections in this order: Product · Dimensions · Pricing · Glass · Other costs · Summary.
+- Match the Oryx Fleet app (Vehicle Management System): navy sidebar (#022A3A), warm grey ground (#F4F4F1), white cards with 12px radius, 44px buttons and inputs.
+- IBM Plex Sans for text, IBM Plex Mono for formulas. Colour tokens live in `src/ui/styles.css`; use only those.
+- Amber pills for "Unconfirmed" and warnings, red and green pills for comparisons. No other accent colours.
+- Sections in this order: Product · Dimensions · Pricing · Glass · Other costs · Summary. On wide screens the Summary sits in a sticky right column.
 
 ## Writing
 UK English. Plain labels (for example "Glass cost (AED)").
