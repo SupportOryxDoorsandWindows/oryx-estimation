@@ -209,3 +209,19 @@ input[type='number'] { font-variant-numeric: tabular-nums; }
 .link-gap { margin-left: 14px; }
 .note { margin: 0; padding: 10px 12px; border-left: 3px solid var(--blue); background: var(--tint); border-radius: 0 8px 8px 0; font-size: 13px; }
 input[type='search'] { -webkit-appearance: none; }
+
+/* Product search */
+.span-2 { grid-column: span 2; }
+@media (max-width: 640px) { .span-2 { grid-column: auto; } }
+.picker { position: relative; }
+.picker-list {
+  position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0; max-height: 340px; overflow-y: auto;
+  margin: 0; padding: 4px; list-style: none; background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(2, 42, 58, 0.12);
+}
+.picker-list li[role='option'] { display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.picker-list li.active { background: var(--soft); }
+.picker-list li.selected { box-shadow: inset 3px 0 0 var(--blue); background: var(--tint); }
+.picker-main { font-weight: 500; }
+.picker-sub { font-size: 12px; color: var(--muted); }
+.picker-empty { padding: 10px; color: var(--muted); font-size: 13px; }

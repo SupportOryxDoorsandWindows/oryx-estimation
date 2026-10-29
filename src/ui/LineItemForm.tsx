@@ -1,10 +1,10 @@
-import { useState } from 'react'
 import { calculateLineItem, standardPricingWarning } from '../engine/calculate'
 import { applyRuleDefaults, matchRule } from '../engine/defaults'
 import { fmtAed, fmtNum } from '../engine/format'
 import type { CostMethod, LineItemInput, LineItemResult, PricingRules, Product } from '../engine/types'
 import { Card, Field, NumberInput, TextInput, Unconfirmed } from './fields'
 import { Icon } from './icons'
+import { ProductPicker } from './ProductPicker'
 import type { Role } from './storage'
 
 const supplierLabel: Record<CostMethod, string> = {
@@ -39,7 +39,6 @@ interface Props {
 }
 
 export function LineItemForm({ item, onChange, rules, products, role }: Props) {
-  const [search, setSearch] = useState('')
   const set = <K extends keyof LineItemInput>(k: K, v: LineItemInput[K]) => onChange({ ...item, [k]: v })
   const product = products.find((p) => p.id === item.productId)
   const rule = rules.rules.find((r) => r.id === item.ruleId) ?? rules.rules[rules.rules.length - 1]
@@ -48,10 +47,6 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
   const stdWarning = product ? standardPricingWarning(result.pricePerSqm, product.standardPricing, rules) : null
   const warnings = [...result.warnings, ...(stdWarning ? [stdWarning] : [])]
   const spDiff = item.salespersonPrice ? item.salespersonPrice - result.rate : null
-
-  const terms = search.toLowerCase().split(/\s+/).filter(Boolean)
-  const label = (p: Product) => [p.fabricator, p.businessUnit, p.productCode, p.type, p.sizeRange].filter(Boolean).join(' · ')
-  const shown = products.filter((p) => p.id === item.productId || terms.every((t) => label(p).toLowerCase().includes(t)))
 
   const pickProduct = (id: string) => {
     const p = products.find((x) => x.id === id)
@@ -67,15 +62,11 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
       <div className="col-main">
         <Card title="Product" id="sec-product">
           <div className="grid">
-            <Field label="Search products" hint={`${shown.length} of ${products.length} shown`}>
-              <input type="search" value={search} placeholder="e.g. Fusion C35" onChange={(e) => setSearch(e.target.value)} />
-            </Field>
-            <Field label="Product">
-              <select value={item.productId} onChange={(e) => pickProduct(e.target.value)}>
-                <option value="">Select a product</option>
-                {shown.map((p) => <option key={p.id} value={p.id}>{label(p)}</option>)}
-              </select>
-            </Field>
+            <div className="field span-2">
+              <span className="field-label">Product</span>
+              <ProductPicker products={products} selectedId={item.productId} onPick={pickProduct} />
+              <span className="field-hint">{products.length} products. One match is selected automatically.</span>
+            </div>
             <Field label="Pricing rule">
               <select value={item.ruleId} onChange={(e) => pickRule(e.target.value)}>
                 {rules.rules.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
