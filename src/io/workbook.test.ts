@@ -6,6 +6,7 @@ import rulesJson from '../../data/pricing-rules.json'
 import { calculateLineItem } from '../engine/calculate'
 import { blankLineItem } from '../engine/defaults'
 import type { PricingRules, Product } from '../engine/types'
+import { blankProposal } from '../ui/proposal'
 import type { Estimate } from '../ui/storage'
 import { buildWorkbook, parseProducts, parseWorkbook, type ReadSheet, type SheetRows } from './workbook'
 
@@ -23,6 +24,18 @@ const cw011: Estimate = {
   name: 'P268194R3',
   createdAt: '2026-10-29T00:00:00.000Z',
   updatedAt: '2026-10-29T00:00:00.000Z',
+  details: {
+    ...blankProposal(),
+    additionalWorksVariation: true,
+    dealName: 'Test deal',
+    address: 'Villa 1, Street 2\nDubai',
+    proposalReference: 'P268194R3',
+    orderValueInCrm: 125000,
+    quoteStatus: 'Accepted by the Client',
+    proposalDate: '2026-10-01',
+    revisionNumber: 3,
+    ocGenerated: 'Yes',
+  },
   items: [
     {
       ...blankLineItem(),
@@ -41,7 +54,7 @@ const cw011: Estimate = {
 
 describe('Excel export and import', () => {
   it('exports calculated figures next to the inputs', () => {
-    const [lines] = buildWorkbook([cw011], rules, products)
+    const lines = buildWorkbook([cw011], rules, products).find((s) => s.sheet === 'Estimates')!
     const header = lines.data[0]
     const row = lines.data[1]
     expect(row[header.indexOf('Rate (AED)')]).toBe(50225)
@@ -54,6 +67,7 @@ describe('Excel export and import', () => {
     expect(estimates).toHaveLength(1)
     expect(estimates![0].name).toBe('P268194R3')
     expect(estimates![0].items).toEqual(cw011.items)
+    expect(estimates![0].details).toEqual(cw011.details)
     expect(calculateLineItem(estimates![0].items[0], imported!).rate).toBe(50225)
     expect(imported).toEqual(rules)
   })
@@ -101,6 +115,7 @@ describe('Zoho BOQ_Summary import', () => {
     expect(estimates).toHaveLength(1)
     const [est] = estimates!
     expect(est.name).toBe('P000001R1 – Test deal')
+    expect(est.details).toMatchObject({ dealName: 'Test deal', proposalReference: 'P000001R1', quoteStatus: 'Not Started' })
     expect(est.items.map((i) => i.ref)).toEqual(['1', '2'])
     expect(notes).toEqual(['Skipped 1 with quantity 0: 1 - FS.'])
 

@@ -249,3 +249,18 @@ input[type='search'] { -webkit-appearance: none; }
 input[inputmode] { font-variant-numeric: tabular-nums; }
 
 .toast-error { background: var(--red-bg); color: var(--red); }
+
+/* Proposal details */
+.wide { grid-column: 1 / -1; }
+.stack-sm { display: flex; flex-direction: column; gap: 12px; }
+.head-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.req { color: var(--red); margin-left: 2px; }
+textarea {
+  width: 100%; min-height: 88px; padding: 10px 12px; border: 1px solid var(--field); border-radius: 8px; resize: vertical;
+  font: inherit; color: var(--ink); background: #fff;
+}
+textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--tint); }
+.check-field { display: flex; align-items: center; gap: 10px; font-weight: 500; cursor: pointer; }
+.check { width: 18px; height: 18px; accent-color: var(--blue); }
+.toast-warn { background: var(--amber-bg); color: var(--amber); }
+.grid-bottom { align-items: end; }

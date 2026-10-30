@@ -2,6 +2,7 @@ import seedRules from '../../data/pricing-rules.json'
 import seedProducts from '../../data/products.json'
 import { blankLineItem } from '../engine/defaults'
 import type { LineItemInput, PricingRules, Product } from '../engine/types'
+import { blankProposal, type ProposalDetails } from './proposal'
 
 export interface Estimate {
   id: string
@@ -9,6 +10,7 @@ export interface Estimate {
   createdAt: string
   updatedAt: string
   items: LineItemInput[]
+  details: ProposalDetails
 }
 
 export type Role = 'estimator' | 'manager'
@@ -52,8 +54,15 @@ export const saveRole = (r: Role) => write(KEYS.role, r)
 
 export function newEstimate(): Estimate {
   const now = new Date().toISOString()
-  return { id: crypto.randomUUID(), name: 'New estimate', createdAt: now, updatedAt: now, items: [blankLineItem()] }
+  return { id: crypto.randomUUID(), name: 'New estimate', createdAt: now, updatedAt: now, items: [blankLineItem()], details: blankProposal() }
 }
 
 /** Fills fields missing from older saved items so the engine always gets a full input. */
 export const normaliseItem = (i: Partial<LineItemInput>): LineItemInput => ({ ...blankLineItem(), ...i })
+
+/** Fills fields missing from older saved estimates (before proposal details existed). */
+export const normaliseEstimate = (e: Estimate): Estimate => ({
+  ...e,
+  items: e.items.map(normaliseItem),
+  details: { ...blankProposal(), ...(e.details ?? {}) },
+})

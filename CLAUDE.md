@@ -25,7 +25,8 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - Match the Oryx Fleet app (Vehicle Management System): navy sidebar (#022A3A), warm grey ground (#F4F4F1), white cards with 12px radius, 44px buttons and inputs.
 - IBM Plex Sans for text, IBM Plex Mono for formulas. Colour tokens live in `src/ui/styles.css`; use only those.
 - Amber pills for "Unconfirmed" and warnings, red and green pills for comparisons. No other accent colours.
-- Sections in this order: Product · Dimensions · Pricing · Glass · Other costs · Summary. On wide screens the Summary sits in a sticky right column.
+- Estimate screen: Proposal details (Zoho Deal and Proposal Information, defined once in `src/ui/proposal.ts`), Line items, then the line item sections.
+- Line item sections in this order: Product · Dimensions · Pricing · Glass · Other costs · Summary. On wide screens the Summary sits in a sticky right column.
 
 ## Writing
 UK English. Plain labels (for example "Glass cost (AED)").

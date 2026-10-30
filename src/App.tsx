@@ -8,10 +8,12 @@ import { downloadWorkbook, pickWorkbook } from './ui/excelFile'
 import { Card } from './ui/fields'
 import { Icon, type IconName } from './ui/icons'
 import { LineItemForm } from './ui/LineItemForm'
+import { ProposalDetailsCard } from './ui/ProposalDetailsCard'
+import { missingRequired } from './ui/proposal'
 import { SettingsScreen } from './ui/SettingsScreen'
 import {
   defaultRules, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
-  newEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRole, saveRules,
+  newEstimate, normaliseEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRole, saveRules,
 } from './ui/storage'
 
 type View = 'estimate' | 'saved' | 'settings'
@@ -34,13 +36,13 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [rules, setRules] = useState<PricingRules>(loadRules)
   const [products, setProducts] = useState<Product[]>(loadProducts)
-  const [estimates, setEstimates] = useState<Estimate[]>(loadEstimates)
+  const [estimates, setEstimates] = useState<Estimate[]>(() => loadEstimates().map(normaliseEstimate))
   const [role, setRole] = useState<Role>(loadRole)
-  const [current, setCurrent] = useState<Estimate>(() => loadEstimates()[0] ?? newEstimate())
+  const [current, setCurrent] = useState<Estimate>(() => { const e = loadEstimates()[0]; return e ? normaliseEstimate(e) : newEstimate() })
   const [itemIndex, setItemIndex] = useState(0)
   const [message, setMessage] = useState('')
-  const [messageTone, setMessageTone] = useState<'ok' | 'error'>('ok')
-  const notify = (text: string, tone: 'ok' | 'error' = 'ok') => { setMessage(text); setMessageTone(tone) }
+  const [messageTone, setMessageTone] = useState<'ok' | 'warn' | 'error'>('ok')
+  const notify = (text: string, tone: 'ok' | 'warn' | 'error' = 'ok') => { setMessage(text); setMessageTone(tone) }
 
   useEffect(() => saveRules(rules), [rules])
   useEffect(() => saveProducts(products), [products])
@@ -61,11 +63,13 @@ export default function App() {
     const saved = { ...current, updatedAt: new Date().toISOString() }
     setCurrent(saved)
     setEstimates([saved, ...estimates.filter((e) => e.id !== saved.id)])
-    notify(`Saved "${saved.name}".`)
+    const missing = missingRequired(saved.details)
+    if (missing.length) notify(`Saved "${saved.name}". Still required: ${missing.join(', ')}.`, 'warn')
+    else notify(`Saved "${saved.name}".`)
   }
 
   const open = (e: Estimate) => {
-    setCurrent({ ...e, items: e.items.map(normaliseItem) })
+    setCurrent(normaliseEstimate(e))
     setItemIndex(0)
     go('estimate')
   }
@@ -84,7 +88,7 @@ export default function App() {
       if (data.estimates) {
         // Imported estimates replace saved ones with the same ID; others are kept.
         const ids = new Set(data.estimates.map((e) => e.id))
-        setEstimates([...data.estimates, ...estimates.filter((e) => !ids.has(e.id))])
+        setEstimates([...data.estimates.map(normaliseEstimate), ...estimates.filter((e) => !ids.has(e.id))])
       }
       if (data.rules) setRules(data.rules)
       const n = data.estimates?.length ?? 0
@@ -163,7 +167,7 @@ export default function App() {
       <main className="content">
         <div className="content-inner">
           {message && (
-            <button type="button" className={`toast ${messageTone === 'error' ? 'toast-error' : ''}`} onClick={() => setMessage('')}>
+            <button type="button" className={`toast ${messageTone === 'error' ? 'toast-error' : messageTone === 'warn' ? 'toast-warn' : ''}`} onClick={() => setMessage('')}>
               {message} <span className="muted">Dismiss</span>
             </button>
           )}
@@ -185,6 +189,8 @@ export default function App() {
                   <button type="button" className="btn btn-primary" onClick={save}>Save estimate</button>
                 </div>
               </header>
+
+              <ProposalDetailsCard details={current.details} onChange={(details) => setCurrent({ ...current, details })} />
 
               <Card title="Line items" aside={`${current.items.length} ${current.items.length === 1 ? 'item' : 'items'} · Total AED ${fmtAed(total)}`}>
                 <div className="table-wrap">
@@ -263,11 +269,13 @@ export default function App() {
                 {estimates.length === 0 ? <p className="muted">No saved estimates yet. Use Save estimate on the Estimate screen.</p> : (
                   <div className="table-wrap">
                     <table className="table">
-                      <thead><tr><th>Name</th><th className="num">Items</th><th>Updated</th><th className="num">Total (AED)</th><th /></tr></thead>
+                      <thead><tr><th>Name</th><th>Proposal reference</th><th>Quote status</th><th className="num">Items</th><th>Updated</th><th className="num">Total (AED)</th><th /></tr></thead>
                       <tbody>
                         {estimates.map((e) => (
                           <tr key={e.id}>
                             <td className="strong">{e.name}</td>
+                            <td>{String(e.details?.proposalReference || '') || <span className="muted">—</span>}</td>
+                            <td>{String(e.details?.quoteStatus || '') || <span className="muted">—</span>}</td>
                             <td className="num">{e.items.length}</td>
                             <td>{new Date(e.updatedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</td>
                             <td className="num strong">{fmtAed(e.items.reduce((t, i) => t + calculateLineItem(normaliseItem(i), rules).amount, 0))}</td>

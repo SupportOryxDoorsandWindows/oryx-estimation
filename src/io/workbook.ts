@@ -3,6 +3,7 @@
 import { calculateLineItem } from '../engine/calculate'
 import { blankLineItem, matchRule } from '../engine/defaults'
 import type { LineItemInput, PricingRule, PricingRules, Product, Settings } from '../engine/types'
+import { blankProposal, PROPOSAL_FIELDS, type ProposalDetails } from '../ui/proposal'
 import type { Estimate } from '../ui/storage'
 
 export type Cell = string | number | boolean | null
@@ -18,6 +19,7 @@ export interface ReadSheet {
 }
 
 export const SHEETS = {
+  proposals: 'Proposal details',
   estimates: 'Estimates',
   accessories: 'Accessories',
   settings: 'Settings',
@@ -124,7 +126,14 @@ export function buildWorkbook(estimates: Estimate[], rules: PricingRules, produc
     ruleRows.push([r.id, r.label, r.fabricator, r.keywords.join(', '), r.costMethod, r.markup, r.freight.type, r.freight.value, r.otherCharges, yesNo(r.glassLine)])
   }
 
+  const proposals: Cell[][] = [['Estimate ID', 'Estimate name', ...PROPOSAL_FIELDS.map((f) => f.label)]]
+  for (const e of estimates) {
+    const d = { ...blankProposal(), ...e.details }
+    proposals.push([e.id, e.name, ...PROPOSAL_FIELDS.map((f) => (f.type === 'checkbox' ? yesNo(!!d[f.key]) : (d[f.key] as Cell)))])
+  }
+
   return [
+    { sheet: SHEETS.proposals, data: proposals, widths: [12, 28, ...PROPOSAL_FIELDS.map((f) => (f.type === 'textarea' ? 40 : 18))] },
     { sheet: SHEETS.estimates, data: lines, widths: [...INPUT_COLS.map((c) => c.width), ...CALC_COLS.map(() => 12)] },
     { sheet: SHEETS.accessories, data: accessories, widths: [12, 7, 40, 12] },
     { sheet: SHEETS.settings, data: settings, widths: [26, 46, 18, 12] },
@@ -171,11 +180,11 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
   if (boq) return parseBoq(boq, current, products)
   const result: ImportResult = {}
   const lineRows = records(findSheet(sheets, SHEETS.estimates))
-  if (!findSheet(sheets, SHEETS.estimates) && !findSheet(sheets, SHEETS.settings)) {
+  if (!findSheet(sheets, SHEETS.estimates) && !findSheet(sheets, SHEETS.settings) && !findSheet(sheets, SHEETS.proposals)) {
     throw new Error(`No "${SHEETS.estimates}" or "${SHEETS.settings}" sheet found. Use a file exported from this app.`)
   }
 
-  if (findSheet(sheets, SHEETS.estimates)) {
+  if (findSheet(sheets, SHEETS.estimates) || findSheet(sheets, SHEETS.proposals)) {
     const accRows = records(findSheet(sheets, SHEETS.accessories))
     const byId = new Map<string, Estimate>()
     for (const row of lineRows) {
@@ -183,7 +192,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
       let est = byId.get(id)
       if (!est) {
         const updated = str(row['Updated']) || new Date().toISOString()
-        est = { id, name: str(row['Estimate name']) || 'Imported estimate', createdAt: updated, updatedAt: updated, items: [] }
+        est = { id, name: str(row['Estimate name']) || 'Imported estimate', createdAt: updated, updatedAt: updated, items: [], details: blankProposal() }
         byId.set(id, est)
       }
       const itemNo = num(row['Item #']) || est.items.length + 1
@@ -209,6 +218,18 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
         .filter((a) => str(a['Estimate ID']) === id && num(a['Item #']) === itemNo)
         .map((a) => ({ description: str(a['Description']), cost: num(a['Cost (AED)']) }))
       est.items.push(item)
+    }
+    // Proposal details: one row per estimate, matched on Estimate ID.
+    for (const row of records(findSheet(sheets, SHEETS.proposals))) {
+      const id = str(row['Estimate ID'])
+      if (!id) continue
+      let est = byId.get(id)
+      if (!est) {
+        const now = new Date().toISOString()
+        est = { id, name: str(row['Estimate name']) || 'Imported estimate', createdAt: now, updatedAt: now, items: [blankLineItem()], details: blankProposal() }
+        byId.set(id, est)
+      }
+      est.details = readProposal(row)
     }
     result.estimates = [...byId.values()]
   }
@@ -274,6 +295,19 @@ export function parseProducts(sheets: ReadSheet[]): Product[] {
   }))
 }
 
+function readProposal(row: Record<string, unknown>): ProposalDetails {
+  const d = blankProposal()
+  for (const f of PROPOSAL_FIELDS) {
+    if (!(f.label in row)) continue
+    const v = row[f.label]
+    d[f.key] = f.type === 'checkbox' ? bool(v)
+      : f.type === 'number' ? num(v)
+      : f.type === 'date' && v instanceof Date ? v.toISOString().slice(0, 10)
+      : str(v)
+  }
+  return d
+}
+
 // ---- Zoho BOQ_Summary ----
 
 const isBoqSheet = (s: ReadSheet) => {
@@ -303,7 +337,22 @@ export function parseBoq(sheet: ReadSheet, rules: PricingRules, products: Produc
     if (!est) {
       const added = row['Added Time'] instanceof Date ? (row['Added Time'] as Date).toISOString() : new Date().toISOString()
       const deal = str(row['Deal Name'])
-      est = { id: `zoho-${proposal}`, name: deal ? `${proposal} – ${deal}` : proposal, createdAt: added, updatedAt: new Date().toISOString(), items: [] }
+      const closing = row['Closing Date']
+      est = {
+        id: `zoho-${proposal}`,
+        name: deal ? `${proposal} – ${deal}` : proposal,
+        createdAt: added,
+        updatedAt: new Date().toISOString(),
+        items: [],
+        details: {
+          ...blankProposal(),
+          dealName: deal,
+          proposalReference: proposal,
+          orderNumber: str(row['Order Number']),
+          quoteStatus: str(row['Quote Status']) || 'Not Started',
+          closingDate: closing instanceof Date ? closing.toISOString().slice(0, 10) : str(closing),
+        },
+      }
       estimates.set(proposal, est)
     }
 
