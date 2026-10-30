@@ -39,6 +39,8 @@ export default function App() {
   const [current, setCurrent] = useState<Estimate>(() => loadEstimates()[0] ?? newEstimate())
   const [itemIndex, setItemIndex] = useState(0)
   const [message, setMessage] = useState('')
+  const [messageTone, setMessageTone] = useState<'ok' | 'error'>('ok')
+  const notify = (text: string, tone: 'ok' | 'error' = 'ok') => { setMessage(text); setMessageTone(tone) }
 
   useEffect(() => saveRules(rules), [rules])
   useEffect(() => saveProducts(products), [products])
@@ -48,6 +50,7 @@ export default function App() {
   const item = current.items[itemIndex] ?? current.items[0]
   const results = current.items.map((i) => calculateLineItem(i, rules))
   const total = results.reduce((t, r) => t + r.amount, 0)
+  const hasZoho = current.items.some((i) => i.zohoAmount != null)
 
   const go = (v: View) => { setView(v); setMenuOpen(false) }
 
@@ -58,7 +61,7 @@ export default function App() {
     const saved = { ...current, updatedAt: new Date().toISOString() }
     setCurrent(saved)
     setEstimates([saved, ...estimates.filter((e) => e.id !== saved.id)])
-    setMessage(`Saved "${saved.name}".`)
+    notify(`Saved "${saved.name}".`)
   }
 
   const open = (e: Estimate) => {
@@ -71,13 +74,13 @@ export default function App() {
     try {
       await downloadWorkbook(`oryx-estimation-${new Date().toISOString().slice(0, 10)}.xlsx`, buildWorkbook(estimates, rules, products))
     } catch (err) {
-      setMessage(`Export failed: ${(err as Error).message}`)
+      notify(`Export failed: ${(err as Error).message}`, 'error')
     }
   }
 
   const importAll = async () => {
     try {
-      const data = parseWorkbook(await pickWorkbook(), rules)
+      const data = parseWorkbook(await pickWorkbook(), rules, products)
       if (data.estimates) {
         // Imported estimates replace saved ones with the same ID; others are kept.
         const ids = new Set(data.estimates.map((e) => e.id))
@@ -85,9 +88,15 @@ export default function App() {
       }
       if (data.rules) setRules(data.rules)
       const n = data.estimates?.length ?? 0
-      setMessage(`Imported ${n} ${n === 1 ? 'estimate' : 'estimates'}${data.rules ? ' and the settings' : ''}.`)
+      const parts = [`Imported ${n} ${n === 1 ? 'estimate' : 'estimates'}${data.rules ? ' and the settings' : ''}.`]
+      const compared = (data.estimates ?? []).flatMap((e) => e.items).filter((i) => i.zohoAmount != null)
+      if (compared.length) {
+        const same = compared.filter((i) => calculateLineItem(i, data.rules ?? rules).amount === i.zohoAmount).length
+        parts.push(`${same} of ${compared.length} line items match the Zoho amount.`)
+      }
+      notify([...parts, ...(data.notes ?? [])].join(' '))
     } catch (err) {
-      setMessage(`Import failed: ${(err as Error).message}`)
+      notify(`Import failed: ${(err as Error).message}`, 'error')
     }
   }
 
@@ -96,9 +105,9 @@ export default function App() {
       const list = parseProducts(await pickWorkbook())
       if (!list.length) throw new Error('No products found in the file')
       setProducts(list)
-      setMessage(`Imported ${list.length} products.`)
+      notify(`Imported ${list.length} products.`)
     } catch (err) {
-      setMessage(`Import failed: ${(err as Error).message}`)
+      notify(`Import failed: ${(err as Error).message}`, 'error')
     }
   }
 
@@ -154,7 +163,7 @@ export default function App() {
       <main className="content">
         <div className="content-inner">
           {message && (
-            <button type="button" className="toast" onClick={() => setMessage('')}>
+            <button type="button" className={`toast ${messageTone === 'error' ? 'toast-error' : ''}`} onClick={() => setMessage('')}>
               {message} <span className="muted">Dismiss</span>
             </button>
           )}
@@ -183,7 +192,9 @@ export default function App() {
                     <thead>
                       <tr>
                         <th>Ref #</th><th>Location</th><th>Product</th>
-                        <th className="num">Qty</th><th className="num">Rate (AED)</th><th className="num">Amount (AED)</th><th />
+                        <th className="num">Qty</th><th className="num">Rate (AED)</th><th className="num">Amount (AED)</th>
+                        {hasZoho && <th className="num">Zoho amount (AED)</th>}
+                        <th />
                       </tr>
                     </thead>
                     <tbody>
@@ -195,6 +206,13 @@ export default function App() {
                           <td className="num">{i.qty}</td>
                           <td className="num">{fmtAed(results[idx].rate)}</td>
                           <td className="num strong">{fmtAed(results[idx].amount)}</td>
+                          {hasZoho && (
+                            <td className="num">
+                              {i.zohoAmount == null ? <span className="muted">—</span> : (
+                                <span className={`pill ${i.zohoAmount === results[idx].amount ? 'pill-green' : 'pill-amber'}`}>{fmtAed(i.zohoAmount)}</span>
+                              )}
+                            </td>
+                          )}
                           <td className="num">
                             {current.items.length > 1 && (
                               <button type="button" className="link" onClick={(e) => {
@@ -208,7 +226,11 @@ export default function App() {
                       ))}
                     </tbody>
                     <tfoot>
-                      <tr><td colSpan={5}>Total (AED)</td><td className="num strong">{fmtAed(total)}</td><td /></tr>
+                      <tr>
+                        <td colSpan={5}>Total (AED)</td><td className="num strong">{fmtAed(total)}</td>
+                        {hasZoho && <td className="num">{fmtAed(current.items.reduce((t, i) => t + (i.zohoAmount ?? 0), 0))}</td>}
+                        <td />
+                      </tr>
                     </tfoot>
                   </table>
                 </div>

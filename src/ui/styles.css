@@ -247,3 +247,5 @@ input[type='search'] { -webkit-appearance: none; }
 .num-step:disabled { color: var(--silver); cursor: default; }
 .num-field:has(.num-step) input { text-align: center; }
 input[inputmode] { font-variant-numeric: tabular-nums; }
+
+.toast-error { background: var(--red-bg); color: var(--red); }

@@ -87,6 +87,8 @@ export interface LineItemInput {
   discountValue: number
   marginChange: number
   salespersonPrice: number | null
+  /** Amount from an imported Zoho BOQ, kept for comparison only. */
+  zohoAmount?: number | null
 }
 
 export interface Step {

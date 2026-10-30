@@ -1,7 +1,7 @@
 // Converts estimates, settings and products to and from spreadsheet rows.
 // Pure functions: the Excel libraries only read and write the rows (see src/ui/excelFile.ts).
 import { calculateLineItem } from '../engine/calculate'
-import { blankLineItem } from '../engine/defaults'
+import { blankLineItem, matchRule } from '../engine/defaults'
 import type { LineItemInput, PricingRule, PricingRules, Product, Settings } from '../engine/types'
 import type { Estimate } from '../ui/storage'
 
@@ -66,6 +66,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'Discount mode', key: 'discountMode', width: 10, get: (_e, i) => (i.discountMode === 'percent' ? 'Percent' : 'Amount') },
   { title: 'Discount value', key: 'discountValue', width: 10, get: (_e, i) => i.discountValue },
   { title: 'Salesperson price (AED)', key: 'salespersonPrice', width: 12, get: (_e, i) => i.salespersonPrice },
+  { title: 'Zoho amount (AED)', key: 'zohoAmount', width: 12, get: (_e, i) => i.zohoAmount ?? null },
 ]
 
 const CALC_COLS: { title: string; get: (r: ReturnType<typeof calculateLineItem>) => number }[] = [
@@ -147,7 +148,12 @@ function records(sheet: ReadSheet | undefined): Record<string, unknown>[] {
   const header = sheet.data[0].map(str)
   return sheet.data.slice(1)
     .filter((row) => row.some((c) => str(c) !== ''))
-    .map((row) => Object.fromEntries(header.map((h, i) => [h, row[i] ?? null])))
+    .map((row) => {
+      // Zoho repeats some titles (e.g. two "ID" columns); the first one wins.
+      const rec: Record<string, unknown> = {}
+      header.forEach((h, i) => { if (!(h in rec)) rec[h] = row[i] ?? null })
+      return rec
+    })
 }
 
 const findSheet = (sheets: ReadSheet[], name: string) =>
@@ -156,9 +162,13 @@ const findSheet = (sheets: ReadSheet[], name: string) =>
 export interface ImportResult {
   estimates?: Estimate[]
   rules?: PricingRules
+  /** Plain-English notes about the import, shown to the user. */
+  notes?: string[]
 }
 
-export function parseWorkbook(sheets: ReadSheet[], current: PricingRules): ImportResult {
+export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, products: Product[] = []): ImportResult {
+  const boq = sheets.find(isBoqSheet)
+  if (boq) return parseBoq(boq, current, products)
   const result: ImportResult = {}
   const lineRows = records(findSheet(sheets, SHEETS.estimates))
   if (!findSheet(sheets, SHEETS.estimates) && !findSheet(sheets, SHEETS.settings)) {
@@ -186,6 +196,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules): Impor
           case 'discountMode': item.discountMode = /percent|%/i.test(str(v)) ? 'percent' : 'amount'; break
           case 'insuranceEnabled': item.insuranceEnabled = bool(v); break
           case 'salespersonPrice': item.salespersonPrice = str(v) === '' ? null : num(v) || null; break
+          case 'zohoAmount': if (str(v) !== '') item.zohoAmount = num(v); break
           case 'ref': case 'location': case 'remarks': case 'productId': case 'ruleId': case 'glazingSpec':
             item[col.key] = str(v); break
           default: (item as unknown as Record<string, number>)[col.key] = num(v)
@@ -261,4 +272,100 @@ export function parseProducts(sheets: ReadSheet[]): Product[] {
     installDays: num(r['Estimated Time of Installation']),
     remarks: clean(r['Remarks']),
   }))
+}
+
+// ---- Zoho BOQ_Summary ----
+
+const isBoqSheet = (s: ReadSheet) => {
+  const header = (s.data[0] ?? []).map(str)
+  return header.includes('Proposal Reference') && header.includes('Reference #')
+}
+
+/**
+ * Reads the Zoho BOQ_Summary export: one estimate per proposal, one line item per row.
+ * Inputs come straight from Zoho, so the calculated rate can be checked against Zoho's Amount.
+ */
+export function parseBoq(sheet: ReadSheet, rules: PricingRules, products: Product[]): ImportResult {
+  const byCode = new Map(products.map((p) => [str(p.oryxCode).replace(/\s+/g, ' '), p]))
+  const estimates = new Map<string, Estimate>()
+  const notes: string[] = []
+  const skipped: string[] = []
+  const unmatched: string[] = []
+  let extraCharges = 0
+
+  for (const row of records(sheet)) {
+    const proposal = str(row['Proposal Reference']) || 'BOQ import'
+    const ref = str(row['Reference #'])
+    const qty = num(row['Quantity'])
+    if (qty <= 0) { skipped.push(ref || '(no ref)'); continue }
+
+    let est = estimates.get(proposal)
+    if (!est) {
+      const added = row['Added Time'] instanceof Date ? (row['Added Time'] as Date).toISOString() : new Date().toISOString()
+      const deal = str(row['Deal Name'])
+      est = { id: `zoho-${proposal}`, name: deal ? `${proposal} – ${deal}` : proposal, createdAt: added, updatedAt: new Date().toISOString(), items: [] }
+      estimates.set(proposal, est)
+    }
+
+    const code = str(row['Search for Product Code']).replace(/\s+/g, ' ')
+    const product = byCode.get(code)
+    if (!product) unmatched.push(`${ref} (${code || str(row['Type of Frame'])})`)
+    const rule = matchRule(product, rules)
+
+    const widthMm = num(row['Width (mm)'])
+    const heightMm = num(row['Height (mm)'])
+    const area = (widthMm * heightMm) / 1_000_000
+    const aedPerSqm = num(row['Fusion Profile (AED per SQM)'])
+    const gbp = num(row['Origin/Atlas/ABS/Radial (GBP)'])
+    const eur = num(row['Inotherm/Kobbe/Tenni/Otif/Renson Pergola/Velux/Renson Sun Protection (EUR)'])
+
+    // Use the supplier price in the rule's own currency. If the rule expects something else,
+    // carry Zoho's AED profile cost over as a lump supplier quote and switch to the manual rule.
+    let ruleId = rule.id
+    let supplierPrice = 0
+    const given = aedPerSqm ? 'aedPerSqm' : gbp ? 'gbp' : eur ? 'eur' : null
+    const fits = given === rule.costMethod || (given === 'eur' && rule.costMethod === 'eurDiscounted')
+    if (given && fits) supplierPrice = given === 'aedPerSqm' ? aedPerSqm : given === 'gbp' ? gbp : eur
+    else if (given) {
+      ruleId = 'other'
+      supplierPrice = given === 'aedPerSqm' ? area * aedPerSqm
+        : given === 'gbp' ? gbp * rules.settings.gbpToAed
+        : eur * rules.settings.eurToAed
+    }
+
+    extraCharges += num(row['Distributed Additional Charges (AED)'])
+    const sp = num(row["Salesperson's Item Pricing (AED)"])
+    const item: LineItemInput = {
+      ...blankLineItem(),
+      productId: product?.id ?? '',
+      ruleId,
+      ref,
+      location: str(row['Location']),
+      remarks: str(row['Type of Frame']),
+      widthMm,
+      heightMm,
+      panels: Math.max(1, Math.round(num(row['No. of Panels']))),
+      qty: Math.round(qty),
+      supplierPrice,
+      markup: num(row['Mark Up']) || rule.markup,
+      marginChange: num(row['Margin Change']) || 1,
+      glassRate: num(row['Glass Rate (AED)']),
+      glassThicknessMm: num(row['Glass Thickness']),
+      bondingMode: 'amount',
+      bondingAmount: num(row['Bonding Charges (AED)']),
+      freight: num(row['Freight (AED)']),
+      otherCharges: num(row['Other Charges (AED)']),
+      equipmentRental: num(row['Equipment Rental (AED)']),
+      salespersonPrice: sp > 0 ? sp : null,
+      zohoAmount: num(row['Amount (AED)']),
+    }
+    est.items.push(item)
+  }
+
+  if (!estimates.size) throw new Error('The BOQ has no rows with a quantity above 0.')
+  for (const e of estimates.values()) e.items.sort((x, y) => x.ref.localeCompare(y.ref, 'en', { numeric: true }))
+  if (skipped.length) notes.push(`Skipped ${skipped.length} with quantity 0: ${skipped.join(', ')}.`)
+  if (unmatched.length) notes.push(`No matching product for ${unmatched.join(', ')}.`)
+  if (extraCharges) notes.push(`Distributed additional charges (AED ${extraCharges}) were not imported; the app has no field for them yet.`)
+  return { estimates: [...estimates.values()], notes }
 }

@@ -82,3 +82,34 @@ describe('Zoho products import', () => {
     expect(() => parseProducts(sheets)).toThrow(/All_Products/)
   })
 })
+
+describe('Zoho BOQ_Summary import', () => {
+  // Made-up proposal in the BOQ_Summary layout. Zoho repeats some column titles; the first one holds the data.
+  const header = ['SN', 'Proposal Reference', 'Deal Name', 'Reference #', 'Location', 'Type of Frame', 'No. of Panels', 'Width (mm)', 'Height (mm)', 'Quantity', 'Amount (AED)',
+    'Origin/Atlas/ABS/Radial (GBP)', 'Glass Rate (AED)', 'Freight (AED)', 'Other Charges (AED)', 'Equipment Rental (AED)', 'Distributed Additional Charges (AED)',
+    "Salesperson's Item Pricing (AED)", 'Bonding Charges (AED)', 'Glass Thickness', 'Fusion Profile (AED per SQM)', 'Origin/Atlas/ABS/Radial (GBP)',
+    'Mark Up', 'Margin Change', 'Search for Product Code']
+  const rows = [
+    ['', 'P000001R1', 'Test deal', '2', 'Hall', 'Fusion F44 Fixed Window', 1, 1600, 1900, 3, 20595, 0, 400, 0, 177, 0, 0, '', 0, 16, 600, '', 3, 1, 'Rabel-Fusion-F44-Fixed Window-max 7sqm'],
+    ['', 'P000001R1', 'Test deal', '1', 'Study', 'Origin OW80 Top Hung Window', 3, 1600, 1900, 1, 8610, 501, 400, 1500, 0, 0, 0, 8610, 0, 16, 0, '', 2.85, 1, 'Origin-Origin-OW80-Top Hung Window'],
+    ['', 'P000001R1', 'Test deal', '1 - FS', 'Study', 'Flyscreen', 1, 1600, 1900, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 16, 0, '', 3, 1, 'Freedom-Freedom-Zipline Flyscreen 80mm-Flyscreen'],
+  ]
+
+  it('builds one estimate per proposal with Zoho inputs and amounts', async () => {
+    const sheets = await roundTrip([{ sheet: 'BOQ_Summary', data: [header, ...rows] }])
+    const { estimates, notes } = parseWorkbook(sheets, rules, products)
+    expect(estimates).toHaveLength(1)
+    const [est] = estimates!
+    expect(est.name).toBe('P000001R1 – Test deal')
+    expect(est.items.map((i) => i.ref)).toEqual(['1', '2'])
+    expect(notes).toEqual(['Skipped 1 with quantity 0: 1 - FS.'])
+
+    const [origin, fusion] = est.items
+    expect(fusion.ruleId).toBe('fusion-a')
+    expect(calculateLineItem(fusion, rules).amount).toBe(fusion.zohoAmount) // 6,865 × 3 = 20,595
+    expect(origin.ruleId).toBe('origin')
+    expect(origin.supplierPrice).toBe(501)
+    expect(origin.salespersonPrice).toBe(8610)
+    expect(calculateLineItem(origin, rules).rate).toBe(9855) // calculated rate stays independent of the salesperson price
+  })
+})

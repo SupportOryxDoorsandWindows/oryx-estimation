@@ -232,6 +232,17 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               </div>
             )}
 
+            {item.zohoAmount != null && (
+              <div className={`pill pill-block ${item.zohoAmount === result.amount ? 'pill-green' : 'pill-amber'}`}>
+                Zoho amount: AED {fmtAed(item.zohoAmount)}
+                {item.zohoAmount === result.amount
+                  ? ' (matches)'
+                  : ` (${item.zohoAmount > result.amount ? 'above' : 'below'} by AED ${fmtAed(Math.abs(item.zohoAmount - result.amount))}${
+                      item.salespersonPrice && item.zohoAmount === item.salespersonPrice * item.qty ? '; Zoho used the salesperson price' : ''
+                    })`}
+              </div>
+            )}
+
             {warnings.length > 0 && (
               <ul className="warnings">
                 {warnings.map((w) => (
