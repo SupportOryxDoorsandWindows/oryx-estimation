@@ -11,7 +11,8 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - Vite + React + TypeScript. No backend for v1.
 - Pricing engine as pure functions in `src/engine/`, with no UI code in that folder.
 - Settings and pricing rules in `data/pricing-rules.json`, editable on a Settings screen.
-- Saved estimates and settings edits persist in localStorage (wrap every access in try/catch). Add JSON export and import.
+- Saved estimates and settings edits persist in localStorage (wrap every access in try/catch).
+- Export and import use Excel (.xlsx): `src/io/workbook.ts` maps rows; `src/ui/excelFile.ts` reads and writes files. Products import takes the Zoho All_Products .xlsx export directly.
 
 ## Non-negotiables
 - The CW01.1 golden test in SPEC.md must pass (rate = 50,225). Write it first with Vitest.

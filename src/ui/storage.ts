@@ -57,31 +57,3 @@ export function newEstimate(): Estimate {
 
 /** Fills fields missing from older saved items so the engine always gets a full input. */
 export const normaliseItem = (i: Partial<LineItemInput>): LineItemInput => ({ ...blankLineItem(), ...i })
-
-export function downloadJson(filename: string, data: unknown) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-export function pickJson(): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.accept = 'application/json,.json'
-    input.onchange = async () => {
-      const file = input.files?.[0]
-      if (!file) return reject(new Error('No file selected'))
-      try {
-        resolve(JSON.parse(await file.text()))
-      } catch {
-        reject(new Error('The file is not valid JSON'))
-      }
-    }
-    input.click()
-  })
-}

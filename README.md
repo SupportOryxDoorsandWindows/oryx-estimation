@@ -20,7 +20,7 @@ npm run dev    # http://localhost:5173
 | `data/products.json` | The 269 products from the Zoho All_Products export (image links omitted) |
 | `reference/` | `PRICING-FORMULAS.xlsx`. Its worked examples are checked in `src/engine/excel.test.ts`. |
 
-Settings edits and saved estimates persist in the browser (localStorage). Use Saved estimates → Export JSON to back them up.
+Settings edits and saved estimates persist in the browser (localStorage). Use Saved estimates → Export Excel to back them up or share them; Import Excel reads that file back. Import products (Excel) takes the Zoho All_Products export as it comes.
 
 ## Known gaps
 

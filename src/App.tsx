@@ -3,13 +3,15 @@ import { calculateLineItem } from './engine/calculate'
 import { blankLineItem } from './engine/defaults'
 import { fmtAed } from './engine/format'
 import type { LineItemInput, PricingRules, Product } from './engine/types'
+import { buildWorkbook, parseProducts, parseWorkbook } from './io/workbook'
+import { downloadWorkbook, pickWorkbook } from './ui/excelFile'
 import { Card } from './ui/fields'
 import { Icon, type IconName } from './ui/icons'
 import { LineItemForm } from './ui/LineItemForm'
 import { SettingsScreen } from './ui/SettingsScreen'
 import {
-  defaultRules, downloadJson, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
-  newEstimate, normaliseItem, pickJson, type Role, saveEstimates, saveProducts, saveRole, saveRules,
+  defaultRules, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
+  newEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRole, saveRules,
 } from './ui/storage'
 
 type View = 'estimate' | 'saved' | 'settings'
@@ -65,15 +67,25 @@ export default function App() {
     go('estimate')
   }
 
-  const exportAll = () =>
-    downloadJson(`oryx-estimation-${new Date().toISOString().slice(0, 10)}.json`, { estimates, rules })
+  const exportAll = async () => {
+    try {
+      await downloadWorkbook(`oryx-estimation-${new Date().toISOString().slice(0, 10)}.xlsx`, buildWorkbook(estimates, rules, products))
+    } catch (err) {
+      setMessage(`Export failed: ${(err as Error).message}`)
+    }
+  }
 
   const importAll = async () => {
     try {
-      const data = (await pickJson()) as { estimates?: Estimate[]; rules?: PricingRules }
-      if (data.estimates) setEstimates(data.estimates.map((e) => ({ ...e, items: e.items.map(normaliseItem) })))
-      if (data.rules?.settings && data.rules.rules) setRules(data.rules)
-      setMessage('Import complete.')
+      const data = parseWorkbook(await pickWorkbook(), rules)
+      if (data.estimates) {
+        // Imported estimates replace saved ones with the same ID; others are kept.
+        const ids = new Set(data.estimates.map((e) => e.id))
+        setEstimates([...data.estimates, ...estimates.filter((e) => !ids.has(e.id))])
+      }
+      if (data.rules) setRules(data.rules)
+      const n = data.estimates?.length ?? 0
+      setMessage(`Imported ${n} ${n === 1 ? 'estimate' : 'estimates'}${data.rules ? ' and the settings' : ''}.`)
     } catch (err) {
       setMessage(`Import failed: ${(err as Error).message}`)
     }
@@ -81,9 +93,8 @@ export default function App() {
 
   const importProducts = async () => {
     try {
-      const data = (await pickJson()) as { products?: Product[] } | Product[]
-      const list = Array.isArray(data) ? data : data.products
-      if (!list?.length) throw new Error('No products found in the file')
+      const list = parseProducts(await pickWorkbook())
+      if (!list.length) throw new Error('No products found in the file')
       setProducts(list)
       setMessage(`Imported ${list.length} products.`)
     } catch (err) {
@@ -221,9 +232,9 @@ export default function App() {
                   <h1>Saved estimates</h1>
                 </div>
                 <div className="actions">
-                  <button type="button" className="btn" onClick={importProducts}>Import products.json</button>
-                  <button type="button" className="btn" onClick={importAll}>Import JSON</button>
-                  <button type="button" className="btn btn-primary" onClick={exportAll}>Export JSON</button>
+                  <button type="button" className="btn" onClick={importProducts}>Import products (Excel)</button>
+                  <button type="button" className="btn" onClick={importAll}>Import Excel</button>
+                  <button type="button" className="btn btn-primary" onClick={exportAll}>Export Excel</button>
                 </div>
               </header>
               <Card title="Estimates" aside="Saved in this browser only">
