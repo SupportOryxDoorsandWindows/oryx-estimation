@@ -10,6 +10,7 @@ import { Icon, type IconName } from './ui/icons'
 import { LineItemForm } from './ui/LineItemForm'
 import { ProposalDetailsCard } from './ui/ProposalDetailsCard'
 import { missingRequired } from './ui/proposal'
+import { createRevision, revisionOf } from './ui/revision'
 import { SettingsScreen } from './ui/SettingsScreen'
 import {
   defaultRules, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
@@ -72,6 +73,21 @@ export default function App() {
     setCurrent(normaliseEstimate(e))
     setItemIndex(0)
     go('estimate')
+  }
+
+  const proposalRef = (e: Estimate) => {
+    const r = revisionOf(e)
+    return String(e.details?.proposalReference || '') || (r ? `${r.base}R${r.revision}` : '')
+  }
+
+  const revise = (e: Estimate) => {
+    const next = createRevision(normaliseEstimate(e), estimates)
+    // Newest revision first: place it above the first revision of the same proposal.
+    const base = revisionOf(e)?.base
+    const sameProposal = estimates.findIndex((x) => base !== undefined && revisionOf(x)?.base === base)
+    const at = sameProposal >= 0 ? sameProposal : estimates.findIndex((x) => x.id === e.id)
+    setEstimates([...estimates.slice(0, at), next, ...estimates.slice(at)])
+    notify(`Created "${next.name}". "${e.name}" is unchanged.`)
   }
 
   const exportAll = async () => {
@@ -274,13 +290,14 @@ export default function App() {
                         {estimates.map((e) => (
                           <tr key={e.id}>
                             <td className="strong">{e.name}</td>
-                            <td>{String(e.details?.proposalReference || '') || <span className="muted">—</span>}</td>
-                            <td>{String(e.details?.quoteStatus || '') || <span className="muted">—</span>}</td>
+                            <td className="nowrap">{proposalRef(e) || <span className="muted">—</span>}</td>
+                            <td className="nowrap">{String(e.details?.quoteStatus || '') || <span className="muted">—</span>}</td>
                             <td className="num">{e.items.length}</td>
                             <td>{new Date(e.updatedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</td>
                             <td className="num strong">{fmtAed(e.items.reduce((t, i) => t + calculateLineItem(normaliseItem(i), rules).amount, 0))}</td>
                             <td className="num nowrap">
-                              <button type="button" className="btn btn-sm" onClick={() => open(e)}>Open</button>
+                              <button type="button" className="btn btn-sm" onClick={() => open(e)}>Open</button>{' '}
+                              <button type="button" className="btn btn-sm" onClick={() => revise(e)}>Create revision</button>
                               <button type="button" className="link link-gap" onClick={() => setEstimates(estimates.filter((x) => x.id !== e.id))}>Delete</button>
                             </td>
                           </tr>
