@@ -94,10 +94,10 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
         <Card title="Dimensions" id="sec-dimensions">
           <div className="grid grid-4">
-            <Field label="Width (mm)"><NumberInput value={item.widthMm} min={0} onChange={(v) => set('widthMm', v)} /></Field>
-            <Field label="Height (mm)"><NumberInput value={item.heightMm} min={0} onChange={(v) => set('heightMm', v)} /></Field>
-            <Field label="No. of panels"><NumberInput value={item.panels} step="1" min={1} onChange={(v) => set('panels', Math.max(1, Math.round(v)))} /></Field>
-            <Field label="Qty"><NumberInput value={item.qty} step="1" min={1} onChange={(v) => set('qty', Math.max(1, Math.round(v)))} /></Field>
+            <Field label="Width (mm)"><NumberInput value={item.widthMm} min={0} suffix="mm" group onChange={(v) => set('widthMm', v)} /></Field>
+            <Field label="Height (mm)"><NumberInput value={item.heightMm} min={0} suffix="mm" group onChange={(v) => set('heightMm', v)} /></Field>
+            <Field label="No. of panels"><NumberInput value={item.panels} step="1" min={1} stepper onChange={(v) => set('panels', Math.max(1, Math.round(v)))} /></Field>
+            <Field label="Qty"><NumberInput value={item.qty} step="1" min={1} stepper onChange={(v) => set('qty', Math.max(1, Math.round(v)))} /></Field>
           </div>
           <Calc result={result} keys={['area']} />
         </Card>
