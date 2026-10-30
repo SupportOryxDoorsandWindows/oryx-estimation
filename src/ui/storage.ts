@@ -64,5 +64,8 @@ export const normaliseItem = (i: Partial<LineItemInput>): LineItemInput => ({ ..
 export const normaliseEstimate = (e: Estimate): Estimate => ({
   ...e,
   items: e.items.map(normaliseItem),
-  details: { ...blankProposal(), ...(e.details ?? {}) },
+  // Keep only current fields, so removed ones (e.g. OC Generated) drop out of older saves.
+  details: Object.fromEntries(
+    Object.entries(blankProposal()).map(([k, v]) => [k, e.details && k in e.details ? e.details[k] : v]),
+  ),
 })

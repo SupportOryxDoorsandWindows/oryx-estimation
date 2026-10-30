@@ -23,7 +23,6 @@ function Input({ field, value, onChange }: { field: ProposalField; value: string
           <input
             type={field.type}
             value={String(value)}
-            placeholder={field.type === 'url' ? 'https://' : undefined}
             list={field.suggestions ? listId : undefined}
             onChange={(e) => onChange(e.target.value)}
           />
@@ -80,7 +79,7 @@ export function ProposalDetailsCard({ details, onChange }: { details: ProposalDe
               </div>
             </div>
           ))}
-          <p className="muted small">File and image uploads from Zoho (proposal Word file, revised proposal and order confirmation, QR image) are not stored here yet.</p>
+          <p className="muted small">File uploads from Zoho (proposal Word file, revised proposal and order confirmation, QR image) are not stored here.</p>
         </div>
       )}
     </section>

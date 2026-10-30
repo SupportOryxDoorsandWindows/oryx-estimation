@@ -34,7 +34,6 @@ const cw011: Estimate = {
     quoteStatus: 'Accepted by the Client',
     proposalDate: '2026-10-01',
     revisionNumber: 3,
-    ocGenerated: 'Yes',
   },
   items: [
     {
