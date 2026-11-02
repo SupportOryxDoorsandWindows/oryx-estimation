@@ -30,7 +30,7 @@ describe('Revisions', () => {
   it('numbers the next revision above any already used', () => {
     expect(draft().reference).toBe('P000123R6')
     expect(startRevision(draft().source, [], [5, 7]).reference).toBe('P000123R8')
-    expect(parseReference('P266534R3')).toEqual({ base: 'P266534', revision: 3 })
+    expect(parseReference('P000456R3')).toEqual({ base: 'P000456', revision: 3 })
   })
 
   it('starts with the accepted total', () => {

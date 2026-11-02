@@ -1,6 +1,6 @@
 import type { Estimate } from './storage'
 
-// Oryx proposal references look like P266534R3: proposal P266534, revision 3.
+// Oryx proposal references look like P000456R3: proposal P000456, revision 3.
 const REF = /\b(P\d+)R(\d+)\b/i
 
 /** Proposal base and revision of an estimate, from its proposal reference or else its name. */

@@ -5,19 +5,19 @@ import { createRevision } from './revision'
 import type { Estimate } from './storage'
 
 const r3: Estimate = {
-  id: 'zoho-P266534R3',
-  name: 'P266534R3 – OC00000 Test deal',
+  id: 'zoho-P000456R3',
+  name: 'P000456R3 – OC00000 Test deal',
   createdAt: '2026-10-30T09:00:00.000Z',
   updatedAt: '2026-10-30T09:00:00.000Z',
   items: [{ ...blankLineItem(), ref: 'W1', widthMm: 1000, accessories: [{ description: 'Handle', cost: 100 }] }],
-  details: { ...blankProposal(), dealName: 'Test deal', proposalReference: 'P266534R3', revisionNumber: 3, address: 'Dubai' },
+  details: { ...blankProposal(), dealName: 'Test deal', proposalReference: 'P000456R3', revisionNumber: 3, address: 'Dubai' },
 }
 
 describe('Create revision', () => {
   it('turns R3 into R4 and keeps the details and items', () => {
     const r4 = createRevision(r3, [r3])
-    expect(r4.name).toBe('P266534R4 – OC00000 Test deal')
-    expect(r4.details).toEqual({ ...r3.details, proposalReference: 'P266534R4', revisionNumber: 4 })
+    expect(r4.name).toBe('P000456R4 – OC00000 Test deal')
+    expect(r4.details).toEqual({ ...r3.details, proposalReference: 'P000456R4', revisionNumber: 4 })
     expect(r4.items).toEqual(r3.items)
     expect(r4.id).not.toBe(r3.id)
   })
@@ -31,12 +31,12 @@ describe('Create revision', () => {
 
   it('never reuses a revision number', () => {
     const r4 = createRevision(r3, [r3])
-    expect(createRevision(r3, [r3, r4]).details.proposalReference).toBe('P266534R5')
+    expect(createRevision(r3, [r3, r4]).details.proposalReference).toBe('P000456R5')
   })
 
   it('reads the revision from the name when the reference is empty', () => {
     const old = { ...r3, details: { ...r3.details, proposalReference: '' } }
-    expect(createRevision(old, [old]).details.proposalReference).toBe('P266534R4')
+    expect(createRevision(old, [old]).details.proposalReference).toBe('P000456R4')
   })
 
   it('numbers estimates without a proposal reference from the Revision Number', () => {
