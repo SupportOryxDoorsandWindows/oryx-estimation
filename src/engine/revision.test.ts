@@ -23,13 +23,13 @@ const accepted = (): RevisionLine[] => {
       current: snapshot({ ref: '2', location: 'Study', description: 'Door', productId: '', widthMm: 900, heightMm: 2100, panels: 1, qty: 1, rate: 3000 }) },
   ]
 }
-const draft = () => startRevision({ reference: 'P266308R5', base: 'P266308', revision: 5, dealName: 'Test' }, accepted())
+const draft = () => startRevision({ reference: 'P000123R5', base: 'P000123', revision: 5, dealName: 'Test' }, accepted())
 const newItem = { ref: '2A', location: 'Study', description: 'Pivot door', productId: '', widthMm: 1000, heightMm: 2400, panels: 1, qty: 1, rate: 4500 }
 
 describe('Revisions', () => {
   it('numbers the next revision above any already used', () => {
-    expect(draft().reference).toBe('P266308R6')
-    expect(startRevision(draft().source, [], [5, 7]).reference).toBe('P266308R8')
+    expect(draft().reference).toBe('P000123R6')
+    expect(startRevision(draft().source, [], [5, 7]).reference).toBe('P000123R8')
     expect(parseReference('P266534R3')).toEqual({ base: 'P266534', revision: 3 })
   })
 

@@ -56,7 +56,7 @@ export interface HistoryEntry {
 }
 
 export interface ProposalRef {
-  /** e.g. P266308R5 */
+  /** e.g. P000123R5 */
   reference: string
   base: string
   revision: number
@@ -66,7 +66,7 @@ export interface ProposalRef {
 
 export interface RevisionDraft {
   source: ProposalRef
-  /** The revision being prepared, e.g. 6 for P266308R6. */
+  /** The revision being prepared, e.g. 6 for P000123R6. */
   revision: number
   reference: string
   lines: RevisionLine[]
