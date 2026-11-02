@@ -29,12 +29,26 @@ export interface PricingRule {
   glassLine: boolean
 }
 
+/** Production-costed AED/m² rates on a width × height grid; sizes in between are interpolated. */
+export interface DoorChart {
+  label: string
+  source: string
+  /** Costed widths and heights in mm, ascending. */
+  widths: number[]
+  heights: number[]
+  /** rates[heightIndex][widthIndex], AED/m². */
+  rates: number[][]
+  /** Fraction added to the interpolated base rate (0.1 = 10%). */
+  markupOnBase: number
+}
+
 export interface PricingRules {
   version: number
   source: string
   settings: Settings
   unconfirmed: (keyof Settings)[]
   rules: PricingRule[]
+  doorChart: DoorChart
 }
 
 /** One row of the Zoho All_Products export. Business Unit is the origin (Fusion, Origin, Hyline…). */
@@ -69,6 +83,8 @@ export interface LineItemInput {
   qty: number
   /** AED/m² for aedPerSqm, GBP for gbp, EUR for eur/eurDiscounted, lump AED for manual. */
   supplierPrice: number
+  /** 'doorChart': the AED/m² rate comes from the door price chart for this width and height. */
+  priceSource: 'entered' | 'doorChart'
   markup: number
   glassRate: number
   glassThicknessMm: number

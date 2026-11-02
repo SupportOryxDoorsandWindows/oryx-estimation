@@ -104,9 +104,24 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
         <Card title="Pricing" id="sec-pricing" aside={rule.label}>
           <div className="grid">
-            <Field label={supplierLabel[rule.costMethod]}>
-              <NumberInput value={item.supplierPrice} onChange={(v) => set('supplierPrice', v)} />
+            <Field label="Supplier price from">
+              <select value={item.priceSource} onChange={(e) => set('priceSource', e.target.value as LineItemInput['priceSource'])}>
+                <option value="entered">Entered below</option>
+                <option value="doorChart">Door price chart ({rules.doorChart.label.toLowerCase()})</option>
+              </select>
             </Field>
+            {item.priceSource === 'doorChart' ? (
+              <Field
+                label="Door chart rate (AED/m²)"
+                hint={rule.costMethod !== 'aedPerSqm' ? `Used instead of the ${rule.label} ${rule.costMethod === 'gbp' ? 'GBP' : rule.costMethod === 'manual' ? 'lump-sum' : 'EUR'} price` : 'Follows the width and height'}
+              >
+                <input type="text" disabled value={result.steps.find((s) => s.key === 'doorRate')?.value ? fmtAed(Math.round(result.steps.find((s) => s.key === 'doorRate')!.value)) : 'Size outside chart'} />
+              </Field>
+            ) : (
+              <Field label={supplierLabel[rule.costMethod]}>
+                <NumberInput value={item.supplierPrice} onChange={(v) => set('supplierPrice', v)} />
+              </Field>
+            )}
             <Field
               label="Markup"
               badge={rule.id === 'other' && unconfirmed.has('defaultMarkupOther')}
@@ -116,7 +131,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             </Field>
             <Field label="Margin change"><NumberInput value={item.marginChange} onChange={(v) => set('marginChange', v)} /></Field>
           </div>
-          <Calc result={result} keys={['profileCost', 'profilePrice']} />
+          <Calc result={result} keys={['doorRate', 'profileCost', 'profilePrice']} />
         </Card>
 
         <Card title="Glass" id="sec-glass">

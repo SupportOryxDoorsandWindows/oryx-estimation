@@ -264,3 +264,12 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .check { width: 18px; height: 18px; accent-color: var(--blue); }
 .toast-warn { background: var(--amber-bg); color: var(--amber); }
 .grid-bottom { align-items: end; }
+
+/* Door price chart */
+.door-chart th, .door-chart td { padding: 0; text-align: right; }
+.door-chart thead th, .door-chart tbody th { padding: 8px 12px; }
+.door-chart tbody tr { cursor: default; }
+.door-chart .costed { background: var(--tint); }
+.door-chart td.on { box-shadow: inset 0 0 0 2px var(--blue); }
+.cell-btn { width: 100%; padding: 8px 12px; border: 0; background: transparent; text-align: right; font-variant-numeric: tabular-nums; cursor: pointer; }
+.cell-btn:hover { background: var(--soft); }

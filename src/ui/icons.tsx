@@ -18,6 +18,12 @@ const PATHS = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  door: (
+    <>
+      <rect x="5" y="2.5" width="14" height="19" rx="1" />
+      <circle cx="15.5" cy="12" r="0.9" fill="currentColor" />
+    </>
+  ),
   menu: <path d="M4 6h16M4 12h16M4 18h16" />,
   warning: (
     <>

@@ -11,13 +11,14 @@ import { LineItemForm } from './ui/LineItemForm'
 import { ProposalDetailsCard } from './ui/ProposalDetailsCard'
 import { missingRequired } from './ui/proposal'
 import { createRevision, revisionOf } from './ui/revision'
+import { DoorChartScreen } from './ui/DoorChartScreen'
 import { SettingsScreen } from './ui/SettingsScreen'
 import {
   defaultRules, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
   newEstimate, normaliseEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRole, saveRules,
 } from './ui/storage'
 
-type View = 'estimate' | 'saved' | 'settings'
+type View = 'estimate' | 'saved' | 'doors' | 'settings'
 
 const NAV: { title: string; items: { view: View; label: string; icon: IconName }[] }[] = [
   {
@@ -27,6 +28,7 @@ const NAV: { title: string; items: { view: View; label: string; icon: IconName }
       { view: 'saved', label: 'Saved estimates', icon: 'saved' },
     ],
   },
+  { title: 'Pricing tools', items: [{ view: 'doors', label: 'Door price chart', icon: 'door' }] },
   { title: 'Setup', items: [{ view: 'settings', label: 'Settings', icon: 'settings' }] },
 ]
 
@@ -307,6 +309,23 @@ export default function App() {
                   </div>
                 )}
               </Card>
+            </>
+          )}
+
+          {view === 'doors' && (
+            <>
+              <header className="page-head">
+                <div className="page-title">
+                  <div className="eyebrow">{rules.doorChart.label} · price per m² from the production costing grid</div>
+                  <h1>Door price chart</h1>
+                </div>
+                {role === 'manager' && (
+                  <div className="actions">
+                    <button type="button" className="btn" onClick={() => setRules({ ...rules, doorChart: defaultRules().doorChart })}>Reset base rates</button>
+                  </div>
+                )}
+              </header>
+              <DoorChartScreen chart={rules.doorChart} onChange={(doorChart) => setRules({ ...rules, doorChart })} role={role} />
             </>
           )}
 

@@ -43,7 +43,12 @@ function write(key: string, value: unknown) {
 export const defaultRules = () => structuredClone(seedRules) as PricingRules
 export const defaultProducts = () => structuredClone(seedProducts.products) as Product[]
 
-export const loadRules = () => read<PricingRules>(KEYS.rules, defaultRules())
+/** Saved rules, with anything added since they were saved (new settings, the door chart) filled from the defaults. */
+export const loadRules = (): PricingRules => {
+  const seed = defaultRules()
+  const saved = read<Partial<PricingRules>>(KEYS.rules, seed)
+  return { ...seed, ...saved, settings: { ...seed.settings, ...saved.settings }, doorChart: saved.doorChart ?? seed.doorChart }
+}
 export const saveRules = (r: PricingRules) => write(KEYS.rules, r)
 export const loadProducts = () => read<Product[]>(KEYS.products, defaultProducts())
 export const saveProducts = (p: Product[]) => write(KEYS.products, p)

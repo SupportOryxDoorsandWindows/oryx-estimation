@@ -11,6 +11,7 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - Vite + React + TypeScript. No backend for v1.
 - Pricing engine as pure functions in `src/engine/`, with no UI code in that folder.
 - Settings and pricing rules in `data/pricing-rules.json`, editable on a Settings screen.
+- Door price chart (`doorChart` in `data/pricing-rules.json`, maths in `src/engine/doorChart.ts`): AED/m² by bilinear interpolation over the production costing grid, from the Single Door Order Estimator workbook. A line item can take its supplier price from it.
 - Saved estimates and settings edits persist in localStorage (wrap every access in try/catch).
 - Export and import use Excel (.xlsx): `src/io/workbook.ts` maps rows; `src/ui/excelFile.ts` reads and writes files. Products import takes the Zoho All_Products .xlsx export directly.
 

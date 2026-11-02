@@ -51,6 +51,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'No. of panels', key: 'panels', width: 9, get: (_e, i) => i.panels },
   { title: 'Qty', key: 'qty', width: 6, get: (_e, i) => i.qty },
   { title: 'Supplier price', key: 'supplierPrice', width: 12, get: (_e, i) => i.supplierPrice },
+  { title: 'Supplier price from', key: 'priceSource', width: 14, get: (_e, i) => (i.priceSource === 'doorChart' ? 'Door price chart' : 'Entered') },
   { title: 'Markup', key: 'markup', width: 8, get: (_e, i) => i.markup },
   { title: 'Margin change', key: 'marginChange', width: 9, get: (_e, i) => i.marginChange },
   { title: 'Glass rate (AED/m²)', key: 'glassRate', width: 11, get: (_e, i) => i.glassRate },
@@ -206,6 +207,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
           case 'insuranceEnabled': item.insuranceEnabled = bool(v); break
           case 'salespersonPrice': item.salespersonPrice = str(v) === '' ? null : num(v) || null; break
           case 'zohoAmount': if (str(v) !== '') item.zohoAmount = num(v); break
+          case 'priceSource': item.priceSource = /door/i.test(str(v)) ? 'doorChart' : 'entered'; break
           case 'ref': case 'location': case 'remarks': case 'productId': case 'ruleId': case 'glazingSpec':
             item[col.key] = str(v); break
           default: (item as unknown as Record<string, number>)[col.key] = num(v)

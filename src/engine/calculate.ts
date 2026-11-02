@@ -1,3 +1,4 @@
+import { doorRate } from './doorChart'
 import { fmtAed, fmtNum } from './format'
 import type { LineItemInput, LineItemResult, PricingRules, Step } from './types'
 
@@ -21,7 +22,24 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
 
   let profileCost: number
   let costFormula: string
-  switch (rule.costMethod) {
+  // Door price chart: the AED/m² rate is looked up from the item's size, whatever the rule's currency.
+  const door = input.priceSource === 'doorChart' && rules.doorChart ? doorRate(input.widthMm, input.heightMm, rules.doorChart) : null
+  if (door) {
+    const markup = rules.doorChart.markupOnBase
+    step(
+      'doorRate', 'Door chart rate (AED/m²)', door.rate,
+      door.inRange
+        ? `${fmtNum(input.widthMm)} × ${fmtNum(input.heightMm)} mm between ${fmtNum(door.widthLow)}–${fmtNum(door.widthHigh)} W and ${fmtNum(door.heightLow)}–${fmtNum(door.heightHigh)} H` +
+          ` (factors ${fmtNum(door.widthFactor)}, ${fmtNum(door.heightFactor)}): ${fmtNum(door.baseRate)}` +
+          (markup ? ` × (1 + ${fmtNum(markup)})` : '')
+        : 'Size outside the chart',
+    )
+    if (!door.inRange) warnings.push(`${fmtNum(input.widthMm)} × ${fmtNum(input.heightMm)} mm is outside the door price chart (W ${rules.doorChart.widths[0]}–${rules.doorChart.widths.at(-1)}, H ${rules.doorChart.heights[0]}–${rules.doorChart.heights.at(-1)} mm). Refer to Production.`)
+  }
+  if (door) {
+    profileCost = area * door.rate
+    costFormula = `${fmtNum(area)} m² × ${fmtNum(door.rate)} AED/m² (door chart)`
+  } else switch (rule.costMethod) {
     case 'aedPerSqm':
       profileCost = area * input.supplierPrice
       costFormula = `${fmtNum(area)} m² × ${fmtNum(input.supplierPrice)} AED/m²`

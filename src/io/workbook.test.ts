@@ -44,7 +44,7 @@ const cw011: Estimate = {
       salespersonPrice: 48000,
     },
     {
-      ...blankLineItem(), ref: 'W02', widthMm: 1000, heightMm: 1500, supplierPrice: 3000, insuranceEnabled: true,
+      ...blankLineItem(), ref: 'W02', priceSource: 'doorChart', widthMm: 1000, heightMm: 1500, supplierPrice: 3000, insuranceEnabled: true,
       discountMode: 'percent', discountValue: 5,
       accessories: [{ description: 'Handle set', cost: 350 }, { description: 'Closer', cost: 900 }],
     },
