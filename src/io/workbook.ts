@@ -153,7 +153,7 @@ const num = (v: unknown) => {
 const bool = (v: unknown) => v === true || /^(yes|true|1)$/i.test(str(v))
 
 /** Rows below a header row, as objects keyed by the header text. */
-function records(sheet: ReadSheet | undefined): Record<string, unknown>[] {
+export function records(sheet: ReadSheet | undefined): Record<string, unknown>[] {
   if (!sheet || sheet.data.length === 0) return []
   const header = sheet.data[0].map(str)
   return sheet.data.slice(1)
@@ -161,7 +161,11 @@ function records(sheet: ReadSheet | undefined): Record<string, unknown>[] {
     .map((row) => {
       // Zoho repeats some titles (e.g. two "ID" columns); the first one wins.
       const rec: Record<string, unknown> = {}
-      header.forEach((h, i) => { if (!(h in rec)) rec[h] = row[i] ?? null })
+      header.forEach((h, i) => {
+        let key = h
+        for (let n = 2; key in rec; n++) key = `${h} (${n})`
+        rec[key] = row[i] ?? null
+      })
       return rec
     })
 }
@@ -358,9 +362,26 @@ export function parseBoq(sheet: ReadSheet, rules: PricingRules, products: Produc
       estimates.set(proposal, est)
     }
 
+    const { item, product, code } = boqRowToItem(row, rules, byCode)
+    if (!product) unmatched.push(`${ref} (${code || str(row['Type of Frame'])})`)
+    extraCharges += num(row['Distributed Additional Charges (AED)'])
+    est.items.push(item)
+  }
+
+  if (!estimates.size) throw new Error('The BOQ has no rows with a quantity above 0.')
+  for (const e of estimates.values()) e.items.sort((x, y) => x.ref.localeCompare(y.ref, 'en', { numeric: true }))
+  if (skipped.length) notes.push(`Skipped ${skipped.length} with quantity 0: ${skipped.join(', ')}.`)
+  if (unmatched.length) notes.push(`No matching product for ${unmatched.join(', ')}.`)
+  if (extraCharges) notes.push(`Distributed additional charges (AED ${extraCharges}) were not imported; the app has no field for them yet.`)
+  return { estimates: [...estimates.values()], notes }
+}
+
+/** One BOQ_Summary row as pricing inputs. Zoho's Amount is kept as zohoAmount. */
+export function boqRowToItem(row: Record<string, unknown>, rules: PricingRules, byCode: Map<string, Product>) {
+    const ref = str(row['Reference #'])
+    const qty = num(row['Quantity'])
     const code = str(row['Search for Product Code']).replace(/\s+/g, ' ')
     const product = byCode.get(code)
-    if (!product) unmatched.push(`${ref} (${code || str(row['Type of Frame'])})`)
     const rule = matchRule(product, rules)
 
     const widthMm = num(row['Width (mm)'])
@@ -384,7 +405,6 @@ export function parseBoq(sheet: ReadSheet, rules: PricingRules, products: Produc
         : eur * rules.settings.eurToAed
     }
 
-    extraCharges += num(row['Distributed Additional Charges (AED)'])
     const sp = num(row["Salesperson's Item Pricing (AED)"])
     const item: LineItemInput = {
       ...blankLineItem(),
@@ -410,13 +430,6 @@ export function parseBoq(sheet: ReadSheet, rules: PricingRules, products: Produc
       salespersonPrice: sp > 0 ? sp : null,
       zohoAmount: num(row['Amount (AED)']),
     }
-    est.items.push(item)
-  }
-
-  if (!estimates.size) throw new Error('The BOQ has no rows with a quantity above 0.')
-  for (const e of estimates.values()) e.items.sort((x, y) => x.ref.localeCompare(y.ref, 'en', { numeric: true }))
-  if (skipped.length) notes.push(`Skipped ${skipped.length} with quantity 0: ${skipped.join(', ')}.`)
-  if (unmatched.length) notes.push(`No matching product for ${unmatched.join(', ')}.`)
-  if (extraCharges) notes.push(`Distributed additional charges (AED ${extraCharges}) were not imported; the app has no field for them yet.`)
-  return { estimates: [...estimates.values()], notes }
+    return { item, product, code }
 }
+

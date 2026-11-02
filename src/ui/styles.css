@@ -273,3 +273,31 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .door-chart td.on { box-shadow: inset 0 0 0 2px var(--blue); }
 .cell-btn { width: 100%; padding: 8px 12px; border: 0; background: transparent; text-align: right; font-variant-numeric: tabular-nums; cursor: pointer; }
 .cell-btn:hover { background: var(--soft); }
+
+/* Revisions */
+.source-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: var(--amber-bg); color: var(--amber); border-radius: 12px; padding: 14px 18px; }
+.source-bar.live { background: var(--green-bg); color: var(--green); }
+.source-bar .muted { color: inherit; opacity: 0.85; }
+.choice-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+.choice-item { text-align: left; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 10px 12px; cursor: pointer; }
+.choice-item:hover { background: var(--soft); }
+.choice-item.on { border-color: var(--blue); background: var(--tint); box-shadow: inset 3px 0 0 var(--blue); }
+.choice { display: flex; flex-direction: column; gap: 10px; }
+.panel { display: flex; flex-direction: column; gap: 14px; background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.table.revision tbody tr { cursor: default; }
+.table.revision tr.struck td:not(:last-child):not(:nth-child(7)) { color: var(--muted); }
+.table.revision tr.struck .strong { text-decoration: line-through; }
+.table.revision tr.child td:first-child { box-shadow: inset 3px 0 0 var(--green); }
+.table.revision tr.panel-row td { background: #fff; padding-top: 0; }
+.row-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; white-space: nowrap; }
+.table.revision td:nth-child(2) { min-width: 240px; }
+.rev-bar .card-head { border-radius: 11px 11px 0 0; }
+.rev-bar-body { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 28px; }
+.rev-counts { flex: 1 1 220px; }
+.rev-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.rev-note { padding: 0 20px 16px; }
+.link.danger { color: var(--red); }
+.history { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+[hidden] { display: none !important; }
+.btn:disabled, .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.ref { white-space: nowrap; }

@@ -18,6 +18,14 @@ const PATHS = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  revision: (
+    <>
+      <path d="M4 12a8 8 0 0 1 13.7-5.6L20 9" />
+      <path d="M20 4v5h-5" />
+      <path d="M20 12a8 8 0 0 1-13.7 5.6L4 15" />
+      <path d="M4 20v-5h5" />
+    </>
+  ),
   door: (
     <>
       <rect x="5" y="2.5" width="14" height="19" rx="1" />

@@ -13,6 +13,7 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - Settings and pricing rules in `data/pricing-rules.json`, editable on a Settings screen.
 - Door price chart (`doorChart` in `data/pricing-rules.json`, maths in `src/engine/doorChart.ts`): AED/m² by bilinear interpolation over the production costing grid, from the Single Door Order Estimator workbook. A line item can take its supplier price from it.
 - Saved estimates and settings edits persist in localStorage (wrap every access in try/catch).
+- Revisions (Phase 2): logic in `src/engine/revision.ts`; data through the `ZohoSource` interface in `src/zoho/source.ts`. Zoho is the source of truth: do not store deals, proposals or BOQ lines from Zoho in the app. See `docs/zoho-integration.md`.
 - Export and import use Excel (.xlsx): `src/io/workbook.ts` maps rows; `src/ui/excelFile.ts` reads and writes files. Products import takes the Zoho All_Products .xlsx export directly.
 
 ## Non-negotiables

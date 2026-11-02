@@ -12,13 +12,14 @@ import { ProposalDetailsCard } from './ui/ProposalDetailsCard'
 import { missingRequired } from './ui/proposal'
 import { createRevision, revisionOf } from './ui/revision'
 import { DoorChartScreen } from './ui/DoorChartScreen'
+import { RevisionScreen } from './ui/RevisionScreen'
 import { SettingsScreen } from './ui/SettingsScreen'
 import {
   defaultRules, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
   newEstimate, normaliseEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRole, saveRules,
 } from './ui/storage'
 
-type View = 'estimate' | 'saved' | 'doors' | 'settings'
+type View = 'estimate' | 'saved' | 'revisions' | 'doors' | 'settings'
 
 const NAV: { title: string; items: { view: View; label: string; icon: IconName }[] }[] = [
   {
@@ -26,6 +27,7 @@ const NAV: { title: string; items: { view: View; label: string; icon: IconName }
     items: [
       { view: 'estimate', label: 'Estimate', icon: 'estimate' },
       { view: 'saved', label: 'Saved estimates', icon: 'saved' },
+      { view: 'revisions', label: 'Revisions', icon: 'revision' },
     ],
   },
   { title: 'Pricing tools', items: [{ view: 'doors', label: 'Door price chart', icon: 'door' }] },
@@ -311,6 +313,17 @@ export default function App() {
               </Card>
             </>
           )}
+
+          {/* Kept mounted so a revision in progress survives switching pages. */}
+          <div className="stack" hidden={view !== 'revisions'}>
+            <header className="page-head">
+              <div className="page-title">
+                <div className="eyebrow">Revision and variation management</div>
+                <h1>Revisions</h1>
+              </div>
+            </header>
+            <RevisionScreen rules={rules} products={products} notify={notify} />
+          </div>
 
           {view === 'doors' && (
             <>
