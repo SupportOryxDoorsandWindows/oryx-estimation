@@ -59,7 +59,7 @@ Sending estimate BOQs back to Zoho is Phase 3 (BOQ generation).
 Read through the MCP server: tool list, metadata of `All_Proposals2`, `BOQ_Summary`, `Add_Proposal` and `BOQ`, one proposal and one BOQ line. Nothing was created or changed.
 
 ### MCP server
-- 41 tools, all Zoho Creator. The CRM tools are no longer on the server.
+- 43 tools: 41 Zoho Creator, plus 2 read-only CRM Deals tools (`ZohoCRM_getDealsRecords`, `ZohoCRM_getDealsRecord`). A test fetch of one deal (name and ID only) worked.
 - Includes admin tools (`updateForm`, `updateField`, `updateButton`, `updateApplicationStatus`, approvals, blueprints, chat agent) that the app does not need.
 
 ### Custom buttons (report `All_Proposals2`)
@@ -100,8 +100,7 @@ Observed: on an accepted proposal (P266308R5) the original lines have an empty `
 1. **The "Revise Accepted Proposal" button.** Is it the copy workflow, and may the app press it when a revision is submitted? To be tried first on a test proposal.
 2. **`Price_Adjustment` checkbox.** When is it ticked?
 3. **`Order_Type` on resized lines.** Original lines are empty, not "Main Order". Leave empty, or set "Main Order"?
-4. **Deal lookup.** The CRM tools are gone from the MCP server. Add read-only CRM Deals search back, or list deals from Creator proposals (enough for Revisions)?
-5. **Tool list.** Remove the admin tools the app does not need.
+4. **Tool list.** Remove the admin tools the app does not need.
 
 ## Deferred
 - **Users and roles** (who gets an account, and whether there is a separate "Estimator" role). On hold at Oryx's request, 3 November 2026. Needed before the live connection is opened to staff.
