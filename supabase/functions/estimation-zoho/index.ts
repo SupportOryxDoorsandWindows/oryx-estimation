@@ -2,7 +2,8 @@
 //
 // The browser never sees the Zoho link: it is the ZOHO_MCP_URL secret of this
 // function. Every request carries the caller's Supabase sign-in token; only an
-// active Admin (user_profiles, shared with Oryx StockFlow) gets an answer.
+// active Admin gets an answer. For now it runs in the Fleet app's (Vehicle
+// Management System) Supabase project and uses its accounts (profiles).
 // Only the read-only actions below exist — no other Zoho tool can be reached.
 //
 // Actions (POST JSON):
@@ -33,7 +34,7 @@ async function isAdmin(req: Request) {
   if (!jwt) return false;
   const { data, error } = await supabase.auth.getUser(jwt);
   if (error || !data?.user) return false;
-  const { data: p } = await supabase.from("user_profiles").select("role, active").eq("user_id", data.user.id).maybeSingle();
+  const { data: p } = await supabase.from("profiles").select("role, active").eq("id", data.user.id).maybeSingle();
   return !!(p && p.active && p.role === "admin");
 }
 
