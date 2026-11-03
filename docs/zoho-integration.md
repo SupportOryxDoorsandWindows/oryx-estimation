@@ -96,6 +96,12 @@ Revision fields: `Order_Type` (Main Order, Additional Item, Item Replacement, Ca
 
 Observed: on an accepted proposal (P266308R5) the original lines have an empty `Order_Type`, not "Main Order".
 
+## Built
+
+- **Server function** `estimation-zoho` (Supabase Edge Function, source in `supabase/functions/estimation-zoho/`). Deployed for now to the Fleet app's Supabase project; reads the `ZOHO_MCP_URL` secret; answers only active Admins (`profiles`). Read-only actions: `searchDeals`, `dealDetails`.
+- **Admin sign-in** in the StockFlow design, with the Fleet app's accounts.
+- **Deal Name auto-fill** in Proposal details. From CRM: Deal Name, Contact Name, Company Name, Deal Owner and email, Stage, Closing Date, Order Value (Amount), Address, Location_Tag, order_number, Proposal_No. From the deal's latest Creator proposal: Deal_Owner_Number, Project_Name, Proposal_Reference_Number. Only non-empty Zoho values are written; filled fields are tagged "From CRM" / "From Creator".
+
 ## Still open
 1. **The "Revise Accepted Proposal" button.** Is it the copy workflow, and may the app press it when a revision is submitted? To be tried first on a test proposal.
 2. **`Price_Adjustment` checkbox.** When is it ticked?
@@ -111,3 +117,7 @@ Observed: on an accepted proposal (P266308R5) the original lines have an empty `
 - `proposals(dealName)`: Creator proposals for the deal; the page lists only "Accepted by the Client".
 - `boq(proposal)`: BOQ lines of the selected proposal, fetched on selection.
 - `submit(draft)`: call the copy Custom API, then update the copied lines with the revision actions (table above). Never delete the original.
+
+## Notes from testing
+- CRM `Address` was empty on the 10 most recent deals; the address may be kept elsewhere in CRM.
+- `Project_Name` and `Proposal_Reference_Number` are not columns of the `All_Proposals2` report, so they stay empty until they are added to it.
