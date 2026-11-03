@@ -54,10 +54,54 @@ No change: markups (2.5 Fusion, 2.22 OTIF, 2.85 the rest), freight (including Or
 ### Scope
 Sending estimate BOQs back to Zoho is Phase 3 (BOQ generation).
 
+## Checked in Zoho (read-only, 3 November 2026)
+
+Read through the MCP server: tool list, metadata of `All_Proposals2`, `BOQ_Summary`, `Add_Proposal` and `BOQ`, one proposal and one BOQ line. Nothing was created or changed.
+
+### MCP server
+- 41 tools, all Zoho Creator. The CRM tools are no longer on the server.
+- Includes admin tools (`updateForm`, `updateField`, `updateButton`, `updateApplicationStatus`, approvals, blueprints, chat agent) that the app does not need.
+
+### Custom buttons (report `All_Proposals2`)
+`Revise_Accepted_Proposal` ("Revise Accepted Proposal", row action with criteria), `Mark_as_Accepted_by_the_C`, `Generate_BOQ`, `Generate_SPC`, `GENERATE_CBN`. Callable with `executeReportCustomAction` and the proposal ID.
+
+### Proposal (`Add_Proposal`)
+| Field | Type | Notes |
+|---|---|---|
+| `Deal_Name` | CRM lookup | `{ID, zc_display_value, potential_name}` |
+| `Quote_Status` | Drop-down | Not Started, Work in Progress, Waiting for Information, Sent to the Client, Accepted by the Client, Rejected by the Client, Replaced Accepted Proposal |
+| `Revision_Number` | Number | |
+| `Order_Type` | Drop-down | Main Order, Variation |
+| `Main_Order_Reference`, `Previous_Order_Reference` | Lookups | |
+| `Proposal_Reference` | Formula | e.g. P266308R5 |
+| `BOQ` | Subform | BOQ lines |
+
+### BOQ line (`BOQ` form, `BOQ_Summary` report)
+Editable fields hold the values; fields ending in a digit are read-only formula copies for display.
+
+| Value | Editable field | Formula copy |
+|---|---|---|
+| Ref # | `Reference` | `Reference1` |
+| Width / Height (mm) | `Width`, `Height` | `Width1`, `Height2` |
+| Panels | `No_of_Panels` | `No_of_Panels1` |
+| Quantity | `Quantity` | `Quantity1` |
+| Location | `Location` | `Location1` |
+| Rate (AED) | `Unit_Rate_AED` | `Rate` |
+| Amount (AED) | `Amount_AED` | `Amount` |
+| Glass rate | `Glass_Rate` (`Glass_Rate2` is the reference rate) | `Glass_Rate_AED` |
+| Product | `Product_Code_Detailed` (lookup) | |
+| Proposal | `Proposal_Reference` (lookup) | |
+
+Revision fields: `Order_Type` (Main Order, Additional Item, Item Replacement, Cancelled Item, Replaced Item, Remake, Overpayment, Credit Note, Variation), `Old_Order_Type`, `Old_Amount_AED`, `Copied_Replaced_from`, `Copied_Replaced_by` (lookups), `Main_Order_ID`, `Main_Order_Reference`, checkboxes `Cancel_Item`, `Replace_Item`, `Copy_Item`, `Size_Adjustment`, `Price_Adjustment`.
+
+Observed: on an accepted proposal (P266308R5) the original lines have an empty `Order_Type`, not "Main Order".
+
 ## Still open
-1. **Creator tools on the MCP server.** The tools listed so far are CRM tools only. Creator (read, add and update records) must be linked.
-2. **Custom API for the copy button.** Its name, authentication, input (original proposal ID) and output (new proposal ID, and which new BOQ line came from which original).
-3. **Field link names of BOQ values.** Several look duplicated (Width / Width1, Height / Height2, Quantity / Quantity1 and others). To be read from one real record through MCP, read-only.
+1. **The "Revise Accepted Proposal" button.** Is it the copy workflow, and may the app press it when a revision is submitted? To be tried first on a test proposal.
+2. **`Price_Adjustment` checkbox.** When is it ticked?
+3. **`Order_Type` on resized lines.** Original lines are empty, not "Main Order". Leave empty, or set "Main Order"?
+4. **Deal lookup.** The CRM tools are gone from the MCP server. Add read-only CRM Deals search back, or list deals from Creator proposals (enough for Revisions)?
+5. **Tool list.** Remove the admin tools the app does not need.
 
 ## Deferred
 - **Users and roles** (who gets an account, and whether there is a separate "Estimator" role). On hold at Oryx's request, 3 November 2026. Needed before the live connection is opened to staff.
