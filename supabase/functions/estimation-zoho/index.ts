@@ -10,6 +10,8 @@
 //   {action: "searchDeals", query}  CRM Deals whose Deal_Name contains query.
 //   {action: "dealDetails", dealId} One CRM deal, plus Deal_Owner_Number etc.
 //                                   from its latest Creator proposal.
+//   {action: "dealProposals", dealId}   Creator proposals of a CRM deal.
+//   {action: "proposalBoq", proposalId} BOQ lines of one Creator proposal.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -103,16 +105,8 @@ async function dealDetails(dealId: string) {
   if (!crm) return null;
 
   // Creator-only fields come from the deal's latest proposal, if it has one.
-  let proposal: any = null;
-  try {
-    const props = records(await tool("ZohoCreator_getCreatorRecords", {
-      path_variables: { ...CREATOR, report_link_name: "All_Proposals2" },
-      query_params: { criteria: `Deal_Name == "${dealId}"` },
-    }));
-    proposal = props.sort((a, b) => Number(b.Revision_Number || 0) - Number(a.Revision_Number || 0))[0] ?? null;
-  } catch {
-    // "No records found" is an error in Creator: the deal simply has no proposal yet.
-  }
+  const props = await creatorRecords("All_Proposals2", `Deal_Name == "${dealId}"`);
+  const proposal = props.sort((a, b) => Number(b.Revision_Number || 0) - Number(a.Revision_Number || 0))[0] ?? null;
 
   return {
     crm: {
@@ -141,6 +135,58 @@ async function dealDetails(dealId: string) {
   };
 }
 
+async function creatorRecords(report: string, criteria: string, max = 1000) {
+  const out: any[] = [];
+  let cursor: string | undefined;
+  do {
+    let payload: any;
+    try {
+      payload = await tool("ZohoCreator_getCreatorRecords", {
+        path_variables: { ...CREATOR, report_link_name: report },
+        query_params: { criteria },
+        ...(cursor ? { headers: { record_cursor: cursor } } : {}),
+      });
+    } catch (e) {
+      // Creator reports "no records found" as a tool error; anything else is a real failure.
+      if (String((e as Error).message).startsWith("zoho_tool_error")) break;
+      throw e;
+    }
+    out.push(...records(payload));
+    cursor = payload?.headers?.record_cursor;
+  } while (cursor && out.length < max);
+  return out;
+}
+
+async function dealProposals(dealId: string) {
+  const props = await creatorRecords("All_Proposals2", `Deal_Name == "${dealId}"`);
+  return props.map((p) => ({
+    id: String(p.ID),
+    reference: p.Proposal_Reference ?? "",
+    revision: Number(p.Revision_Number) || 0,
+    status: p.Quote_Status ?? "",
+    total: Number(p.Order_Value) || 0,
+    dealName: p.Deal_Name?.zc_display_value ?? "",
+  }));
+}
+
+// BOQ line fields the Revisions page needs (link names from the BOQ_Summary report).
+const BOQ_FIELDS = [
+  "ID", "Reference1", "Location1", "Type_of_Frame", "No_of_Panels", "Width", "Height", "Quantity1", "Unit_Rate_AED", "Amount_AED",
+  "Fusion_Profile_AED_per_SQM", "Origin_Profile_GBP", "Inotherm_Door_EUR", "Glass_Rate", "Glass_Thickness", "Freight_AED",
+  "Other_Charges_AED", "Equipment_Rental_AED", "Bonding_Charges_AED", "Distributed_Equipment_Rental_AED",
+  "Salesperson_s_Item_Pricing", "Mark_Up", "Margin_Change", "Order_Type", "Sequence",
+];
+
+async function proposalBoq(proposalId: string) {
+  const lines = await creatorRecords("BOQ_Summary", `Proposal_Reference == ${proposalId}`);
+  return lines.map((l) => {
+    const line: Record<string, unknown> = {};
+    for (const f of BOQ_FIELDS) line[f] = l[f] ?? "";
+    line.Product_Code = l.Product_Code_Detailed?.zc_display_value ?? "";
+    return line;
+  });
+}
+
 Deno.serve(async (req: Request) => {
   const headers = { "Content-Type": "application/json", ...cors(req) };
   const reply = (obj: unknown, status = 200) => new Response(JSON.stringify(obj), { status, headers });
@@ -162,6 +208,16 @@ Deno.serve(async (req: Request) => {
       if (!/^\d{5,25}$/.test(id)) return reply({ error: "bad_deal_id" }, 400);
       const deal = await dealDetails(id);
       return deal ? reply(deal) : reply({ error: "deal_not_found" }, 404);
+    }
+    if (body.action === "dealProposals") {
+      const id = String(body.dealId ?? "");
+      if (!/^\d{5,25}$/.test(id)) return reply({ error: "bad_deal_id" }, 400);
+      return reply({ proposals: await dealProposals(id) });
+    }
+    if (body.action === "proposalBoq") {
+      const id = String(body.proposalId ?? "");
+      if (!/^\d{5,25}$/.test(id)) return reply({ error: "bad_proposal_id" }, 400);
+      return reply({ lines: await proposalBoq(id) });
     }
     return reply({ error: "unknown_action" }, 400);
   } catch (e) {

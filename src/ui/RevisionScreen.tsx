@@ -6,6 +6,7 @@ import {
 } from '../engine/revision'
 import type { PricingRules, Product } from '../engine/types'
 import { revisionSheets } from '../io/revisionWorkbook'
+import { liveZohoSource } from '../zoho/liveSource'
 import { boqFileSource, isAccepted, type DealSummary, type ProposalSummary, type ZohoSource } from '../zoho/source'
 import { downloadWorkbook, pickWorkbook } from './excelFile'
 import { Card, Field, NumberInput, TextInput } from './fields'
@@ -104,10 +105,12 @@ function SizePanel({ line, rules, onSave, onCancel }: {
 type Panel = { kind: 'add' } | { kind: 'replace'; id: string } | { kind: 'size'; id: string } | null
 
 export function RevisionScreen({ rules, products, notify }: { rules: PricingRules; products: Product[]; notify: (t: string, tone?: 'ok' | 'warn' | 'error') => void }) {
-  const [source, setSource] = useState<ZohoSource | null>(null)
+  // Live Zoho by default; a BOQ export can still be loaded for testing.
+  const [source, setSource] = useState<ZohoSource>(() => liveZohoSource(rules, products))
   const [dealQuery, setDealQuery] = useState('')
   const [deals, setDeals] = useState<DealSummary[]>([])
-  const [deal, setDeal] = useState<string>('')
+  const [dealStatus, setDealStatus] = useState('')
+  const [deal, setDeal] = useState<DealSummary | null>(null)
   const [proposals, setProposals] = useState<ProposalSummary[]>([])
   const [draft, setDraft] = useState<RevisionDraft | null>(null)
   const [panel, setPanel] = useState<Panel>(null)
@@ -122,36 +125,51 @@ export function RevisionScreen({ rules, products, notify }: { rules: PricingRule
   }, [draft])
 
   useEffect(() => {
-    if (!source) return
     let live = true
-    source.searchDeals(dealQuery).then((d) => live && setDeals(d.slice(0, 20)))
-    return () => { live = false }
+    if (source.live && dealQuery.trim().length < 2) { setDeals([]); setDealStatus('Type at least 2 letters of the deal name.'); return }
+    setDealStatus(source.live ? 'Searching Zoho CRM…' : '')
+    const t = setTimeout(() => {
+      source.searchDeals(dealQuery)
+        .then((d) => { if (!live) return; setDeals(d.slice(0, 20)); setDealStatus(d.length ? '' : 'No deals match.') })
+        .catch((e: Error) => live && (setDeals([]), setDealStatus(e.message)))
+    }, source.live ? 350 : 0)
+    return () => { live = false; clearTimeout(t) }
   }, [source, dealQuery])
+
+  const reset = (src: ZohoSource) => { setSource(src); setDeal(null); setDeals([]); setProposals([]); setDraft(null); setPanel(null) }
 
   const loadTestFile = async () => {
     try {
       const sheets = await pickWorkbook()
-      const src = boqFileSource('BOQ export', sheets, rules, products)
-      setSource(src); setDeal(''); setProposals([]); setDraft(null)
+      reset(boqFileSource('BOQ export', sheets, rules, products))
       notify('BOQ export loaded for testing. It is held in this page only and is not saved.')
     } catch (err) {
       notify(`Could not load the BOQ export: ${(err as Error).message}`, 'error')
     }
   }
 
-  const pickDeal = async (name: string) => {
+  const pickDeal = async (d: DealSummary) => {
     if (draft?.history.length && !confirm('Discard the revision in progress?')) return
-    setDeal(name); setDraft(null); setPanel(null)
-    setProposals(await source!.proposals(name))
+    setDeal(d); setDraft(null); setPanel(null); setProposals([])
+    setBusy(true)
+    try {
+      setProposals(await source.proposals(d))
+    } catch (err) {
+      notify((err as Error).message, 'error')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const open = async (p: ProposalSummary) => {
     if (draft?.history.length && !confirm('Discard the revision in progress?')) return
     setBusy(true)
     try {
-      const lines = await source!.boq(p)
+      const lines = await source.boq(p)
       setDraft(startRevision(p, lines, proposals.map((x) => x.revision)))
       setPanel(null)
+    } catch (err) {
+      notify((err as Error).message, 'error')
     } finally {
       setBusy(false)
     }
@@ -172,48 +190,48 @@ export function RevisionScreen({ rules, products, notify }: { rules: PricingRule
 
   return (
     <div className="stack">
-      <div className={`source-bar ${source?.live ? 'live' : ''}`}>
+      <div className={`source-bar ${source.live ? 'live' : ''}`}>
         <div>
-          <strong>{source?.live ? 'Connected to Zoho' : 'Zoho is not connected yet'}</strong>
-          <span className="muted small">
-            {source
-              ? ` · ${source.label}. Held in this page only; nothing is saved in the app.`
-              : ' · Deals and accepted proposals will come from Zoho CRM and Zoho Creator once the connection is set up. For now, load a BOQ_Summary export to test revisions.'}
-          </span>
+          <strong>{source.live ? 'Connected to Zoho' : 'Testing with a BOQ export'}</strong>
+          <span className="muted small"> · {source.label}. Fetched when selected; nothing is saved in the app.</span>
         </div>
-        <button type="button" className="btn btn-sm" onClick={loadTestFile}>{source ? 'Load another export' : 'Load BOQ export for testing'}</button>
+        {source.live
+          ? <button type="button" className="btn btn-sm" onClick={loadTestFile}>Load BOQ export for testing</button>
+          : <button type="button" className="btn btn-sm" onClick={() => reset(liveZohoSource(rules, products))}>Use live Zoho</button>}
       </div>
 
-      {source && (
-        <Card title="Select the accepted proposal">
-          <div className="grid">
+      <Card title="Select the accepted proposal">
+        <div className="grid">
+          <div className="field span-2">
+            <span className="field-label">Deal Name</span>
+            <input type="search" value={dealQuery} placeholder={source.live ? 'Search Zoho CRM deals' : 'Search deals'} onChange={(e) => setDealQuery(e.target.value)} />
+            <div className="choice-list">
+              {dealStatus && <span className="muted small">{dealStatus}</span>}
+              {deals.map((d) => (
+                <button key={d.zohoId ?? d.name} type="button" disabled={busy}
+                  className={`choice-item ${deal && (d.zohoId ?? d.name) === (deal.zohoId ?? deal.name) ? 'on' : ''}`} onClick={() => pickDeal(d)}>
+                  {d.name}
+                  {d.details && <span className="muted"> · {[d.details.company, d.details.stage].filter(Boolean).join(' · ')}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+          {deal && (
             <div className="field span-2">
-              <span className="field-label">Deal Name</span>
-              <input type="search" value={dealQuery} placeholder="Search deals" onChange={(e) => setDealQuery(e.target.value)} />
+              <span className="field-label">Accepted proposal</span>
               <div className="choice-list">
-                {deals.length === 0 && <span className="muted small">No deals match.</span>}
-                {deals.map((d) => (
-                  <button key={d.name} type="button" className={`choice-item ${d.name === deal ? 'on' : ''}`} onClick={() => pickDeal(d.name)}>{d.name}</button>
+                {accepted.length === 0 && <span className="muted small">This deal has no accepted proposal.</span>}
+                {accepted.map((p) => (
+                  <button key={p.reference} type="button" disabled={busy} className={`choice-item ${draft?.source.reference === p.reference ? 'on' : ''}`} onClick={() => open(p)}>
+                    <strong>{p.reference}</strong> <span className="muted">· {p.status}{p.lineCount ? ` · ${p.lineCount} lines` : ''}{p.total ? ` · AED ${fmtAed(Math.round(p.total))}` : ''}</span>
+                  </button>
                 ))}
               </div>
+              {hidden > 0 && <span className="field-hint">{hidden} other {hidden === 1 ? 'proposal is' : 'proposals are'} not accepted and not shown.</span>}
             </div>
-            {deal && (
-              <div className="field span-2">
-                <span className="field-label">Accepted proposal</span>
-                <div className="choice-list">
-                  {accepted.length === 0 && <span className="muted small">This deal has no accepted proposal.</span>}
-                  {accepted.map((p) => (
-                    <button key={p.reference} type="button" disabled={busy} className={`choice-item ${draft?.source.reference === p.reference ? 'on' : ''}`} onClick={() => open(p)}>
-                      <strong>{p.reference}</strong> <span className="muted">· {p.status} · {p.lineCount} lines · AED {fmtAed(Math.round(p.total))}</span>
-                    </button>
-                  ))}
-                </div>
-                {hidden > 0 && <span className="field-hint">{hidden} other {hidden === 1 ? 'proposal is' : 'proposals are'} not accepted and not shown.</span>}
-              </div>
-            )}
-          </div>
-        </Card>
-      )}
+          )}
+        </div>
+      </Card>
 
       {draft && t && (
         <>
@@ -234,14 +252,14 @@ export function RevisionScreen({ rules, products, notify }: { rules: PricingRule
               </div>
               <div className="rev-buttons">
                 <button type="button" className="btn" onClick={() => downloadWorkbook(`${draft.reference}-revision.xlsx`, revisionSheets(draft))}>Export revision (Excel)</button>
-                <button type="button" className="btn btn-primary" disabled={!source?.submit || !draft.history.length}
-                  title={source?.submit ? undefined : 'Needs the live Zoho connection'}
-                  onClick={async () => { await source!.submit!(draft); notify(`${draft.reference} sent to Zoho.`) }}>
+                <button type="button" className="btn btn-primary" disabled={!source.submit || !draft.history.length}
+                  title={source.submit ? undefined : 'Not switched on yet'}
+                  onClick={async () => { await source.submit!(draft); notify(`${draft.reference} sent to Zoho.`) }}>
                   Submit to Zoho
                 </button>
               </div>
             </div>
-            {!source?.submit && <p className="muted small rev-note">Submitting needs the live Zoho connection. Until then, export the revision to Excel.</p>}
+            {!source.submit && <p className="muted small rev-note">Submitting to Zoho is not switched on yet. Until then, export the revision to Excel.</p>}
           </section>
 
             <Card title={`BOQ – ${draft.source.reference} → ${draft.reference}`} aside={`${draft.lines.length} lines`}>

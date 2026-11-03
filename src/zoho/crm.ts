@@ -46,5 +46,19 @@ async function call<T>(body: Record<string, unknown>): Promise<T> {
   return data as T
 }
 
+export interface ZohoProposal {
+  id: string
+  reference: string
+  revision: number
+  status: string
+  total: number
+  dealName: string
+}
+
+/** One BOQ line as the server function returns it: BOQ_Summary link names, values as text. */
+export type ZohoBoqLine = Record<string, string>
+
 export const searchDeals = async (query: string) => (await call<{ deals: DealHit[] }>({ action: 'searchDeals', query })).deals
 export const dealDetails = (dealId: string) => call<DealDetails>({ action: 'dealDetails', dealId })
+export const dealProposals = async (dealId: string) => (await call<{ proposals: ZohoProposal[] }>({ action: 'dealProposals', dealId })).proposals
+export const proposalBoq = async (proposalId: string) => (await call<{ lines: ZohoBoqLine[] }>({ action: 'proposalBoq', proposalId })).lines

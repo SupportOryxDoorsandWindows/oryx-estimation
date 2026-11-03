@@ -98,8 +98,9 @@ Observed: on an accepted proposal (P266308R5) the original lines have an empty `
 
 ## Built
 
-- **Server function** `estimation-zoho` (Supabase Edge Function, source in `supabase/functions/estimation-zoho/`). Deployed for now to the Fleet app's Supabase project; reads the `ZOHO_MCP_URL` secret; answers only active Admins (`profiles`). Read-only actions: `searchDeals`, `dealDetails`.
+- **Server function** `estimation-zoho` (Supabase Edge Function, source in `supabase/functions/estimation-zoho/`). Deployed for now to the Fleet app's Supabase project; reads the `ZOHO_MCP_URL` secret; answers only active Admins (`profiles`). Read-only actions: `searchDeals`, `dealDetails`, `dealProposals`, `proposalBoq`.
 - **Admin sign-in** in the StockFlow design, with the Fleet app's accounts.
+- **Revisions page, live (read-only)**: search CRM deals, list the deal's Creator proposals (only "Accepted by the Client" can be revised), load the BOQ lines from `BOQ_Summary` (`Proposal_Reference == <proposal ID>`). Lines are priced through the same mapping as the BOQ Excel import. Submit to Zoho is not switched on yet.
 - **Deal Name auto-fill** in Proposal details. From CRM: Deal Name, Contact Name, Company Name, Deal Owner and email, Stage, Closing Date, Order Value (Amount), Address, Location_Tag, order_number, Proposal_No. From the deal's latest Creator proposal: Deal_Owner_Number, Project_Name, Proposal_Reference_Number. Only non-empty Zoho values are written; filled fields are tagged "From CRM" / "From Creator".
 
 ## Still open

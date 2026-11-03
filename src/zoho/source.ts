@@ -24,7 +24,7 @@ export interface ZohoSource {
   live: boolean
   searchDeals(query: string): Promise<DealSummary[]>
   /** Every proposal of the deal; callers filter to accepted ones. */
-  proposals(dealName: string): Promise<ProposalSummary[]>
+  proposals(deal: DealSummary): Promise<ProposalSummary[]>
   /** BOQ lines of one proposal, fetched when it is selected. */
   boq(proposal: ProposalRef): Promise<RevisionLine[]>
   /** Sends a finished revision back to Zoho. Absent until the live connection exists. */
@@ -78,8 +78,8 @@ export function boqFileSource(fileName: string, sheets: ReadSheet[], rules: Pric
       const names = [...new Set(rows.map((r) => str(r['Deal Name'])).filter(Boolean))]
       return names.filter((n) => terms.every((t) => n.toLowerCase().includes(t))).map((name) => ({ name }))
     },
-    async proposals(dealName) {
-      return proposalsOf(dealName)
+    async proposals(deal) {
+      return proposalsOf(deal.name)
     },
     async boq(proposal) {
       return rows
