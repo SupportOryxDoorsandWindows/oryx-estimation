@@ -31,8 +31,18 @@ export interface ZohoSource {
   submit?(draft: RevisionDraft): Promise<void>
 }
 
-/** Zoho calls this "Accepted Proposal" in the plan and "Accepted by the Client" in the BOQ export. */
-export const isAccepted = (status: string) => /accept/i.test(status)
+/** Quote_Status values confirmed by Oryx (Zoho Creator, proposals-2-0). */
+export const QUOTE_STATUS = {
+  /** The proposal that can be revised. */
+  accepted: 'Accepted by the Client',
+  /** A new revision, until the client confirms it in Zoho. */
+  workInProgress: 'Work in Progress',
+  /** The earlier proposal once its revision is accepted. */
+  replaced: 'Replaced Accepted Proposal',
+} as const
+
+/** Only the current accepted proposal can be revised, not one already replaced. */
+export const isAccepted = (status: string) => status.trim().toLowerCase() === QUOTE_STATUS.accepted.toLowerCase()
 
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v).trim())
 const num = (v: unknown) => (typeof v === 'number' ? v : Number(str(v).replace(/,/g, '')) || 0)

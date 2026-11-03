@@ -1,27 +1,67 @@
 # Zoho integration (Phase 2)
 
-Phase 2 requires deals to come from Zoho CRM and accepted proposals and BOQ lines from Zoho Creator, with revisions sent back to Zoho. The revision features are built against a `ZohoSource` interface (`src/zoho/source.ts`). Until the live source exists, the Revisions page uses a BOQ_Summary export held in memory for testing.
+Deals come from Zoho CRM, and accepted proposals and BOQ lines from Zoho Creator. Revisions are sent back to Zoho. The revision features use the `ZohoSource` interface (`src/zoho/source.ts`). Until the live source exists, the Revisions page uses a BOQ_Summary export held in memory for testing.
 
-## Why a server is needed
+Zoho is the source of truth: the app does not store deals, proposals or BOQ lines from Zoho.
 
-The app is a static site. Zoho's APIs need an OAuth client secret and refresh token, which must never be in browser code, and they do not accept calls straight from a browser. A small server (for example a Supabase Edge Function, as used for the Fleet app) holds the credentials and calls Zoho for the app. It must also check that the user is signed in, so the public site cannot read Zoho data.
+## Decisions confirmed by Oryx (3 November 2026)
 
-## Needed from Oryx
-
-| Item | Notes |
+### Access
+| Item | Decision |
 |---|---|
-| Zoho data centre | .com, .eu, .in, .com.au, … |
-| OAuth client (Server-based or Self Client) | Client ID and secret, stored only on the server |
-| Scopes | `ZohoCRM.modules.deals.READ`, `ZohoCreator.report.READ`, `ZohoCreator.form.CREATE`, `ZohoCreator.report.UPDATE` |
-| Creator app | Owner and app link name (the exports show `oryxdoors` / `proposals-2-0`) |
-| Creator reports and forms | Link names for proposals and BOQ lines, and the field link names |
-| Status values | The exact "accepted" status (the BOQ shows "Accepted by the Client"; the plan says "Accepted Proposal") and the "superseded" status for a revised proposal |
-| Revision workflow | How a revision is stored: new proposal record with its own BOQ lines, and how it links to the original |
-| Sign-in | Who may use revisions, and how they sign in |
+| Data centre | .com |
+| Connection | Zoho MCP server ("estimationapp"). The URL contains its access key: it is kept only as a server secret, never in code, documents or chat. Regenerate it after go-live. |
+| CRM module | `Deals` |
+| Creator app | Owner `oryxdoors`, app `proposals-2-0` |
+| Creator reports | `All_Proposals2` (proposals), `BOQ_Summary` (BOQ lines) |
+| Creator forms | `Add_Proposal` (proposals), `BOQ` (BOQ lines) |
+| Proposal ↔ BOQ link | `Proposal_Reference`, a lookup field |
+| Sign-in | Supabase, same project as the Fleet app |
+| Who revises and submits | Sales support (estimator) |
+| Hosting | GitHub Pages for now; Zoho data stays behind sign-in on the server |
+
+### Proposal statuses (`Quote_Status`)
+| Status | Meaning |
+|---|---|
+| Accepted by the Client | The proposal that can be revised. The Revisions page lists only this status. |
+| Work in Progress | A new revision, after it is copied from the accepted proposal |
+| Replaced Accepted Proposal | The earlier proposal, once its revision is accepted |
+
+Client acceptance is marked in Zoho, not in the app. The proposal that is revised is whichever currently has "Accepted by the Client".
+
+### Creating a revision
+Zoho has an existing copy button on `Add_Proposal` that copies a proposal and references the original. The Zoho admin will expose it as a **Custom API** for the app to call (decision: option A).
+
+### BOQ line fields for revisions
+| Revision action | `Order_Type` | Checkbox | Other fields |
+|---|---|---|---|
+| Original line | Main Order | – | – |
+| Cancel Item | Cancelled Item | `Cancel_Item` | `Old_Amount_AED`, `Old_Order_Type` |
+| Replace Item (original) | Replaced Item | `Replace_Item` | `Old_Amount_AED`, `Old_Order_Type`, `Copied_Replaced_by` |
+| Replace Item (new line) | Item Replacement | – | `Copied_Replaced_from` |
+| Add Item | Additional Item | – | – |
+| Size Revision without price change | Main Order | `Size_Adjustment` | – |
+| Size Revision with price change | Main Order | – | New size and amount |
+
+- Other `Order_Type` values (Remake, Overpayment, Credit Note, Variation) are not set by the app.
+- `Copy_Item` is for duplicating a line item; Phase 2 does not use it.
+- Zoho does not keep the original size; the app's revision history and Excel export do.
+- `Main_Order_ID` and `Main_Order_Reference` link a revision to the accepted proposal. `Previous_Order_Reference`: purpose unknown, not used.
+
+### Pricing defaults
+No change: markups (2.5 Fusion, 2.22 OTIF, 2.85 the rest), freight (including Origin AED 1,500 per panel) and other charges (Fusion 250, Inotherm 1,500) stay as in `data/pricing-rules.json`.
+
+### Scope
+Sending estimate BOQs back to Zoho is Phase 3 (BOQ generation).
+
+## Still open
+1. **Creator tools on the MCP server.** The tools listed so far are CRM tools only. Creator (read, add and update records) must be linked.
+2. **Custom API for the copy button.** Its name, authentication, input (original proposal ID) and output (new proposal ID, and which new BOQ line came from which original).
+3. **Field link names of BOQ values.** Several look duplicated (Width / Width1, Height / Height2, Quantity / Quantity1 and others). To be read from one real record through MCP, read-only.
+4. **Users.** Names and emails of the sales support staff, and whether they get a separate "Estimator" role in the Fleet Supabase project.
 
 ## Interface the live source implements
-
-- `searchDeals(query)`: Zoho CRM Deals search.
-- `proposals(dealName)`: Creator proposals for the deal (the page shows only accepted ones).
-- `boq(proposal)`: Creator BOQ lines for the selected proposal, fetched on selection.
-- `submit(draft)`: create the revised proposal and its BOQ lines (with status, replaces/replaced-by and size revision type), and mark the original as superseded. Never delete the original.
+- `searchDeals(query)`: CRM Deals search.
+- `proposals(dealName)`: Creator proposals for the deal; the page lists only "Accepted by the Client".
+- `boq(proposal)`: BOQ lines of the selected proposal, fetched on selection.
+- `submit(draft)`: call the copy Custom API, then update the copied lines with the revision actions (table above). Never delete the original.
