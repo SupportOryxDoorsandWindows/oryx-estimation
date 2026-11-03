@@ -8,7 +8,9 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - `data/products.json`: the 269 products exported from Zoho (All_Products). Business Unit is the origin used for pricing rules; Fabricator is the maker.
 
 ## Stack
-- Vite + React + TypeScript. No backend for v1.
+- Vite + React + TypeScript, static site (GitHub Pages).
+- Sign-in: Supabase Auth, for now the Fleet app's (Vehicle Management System) project and accounts; only active Admins (`profiles`) can use the app (`src/auth/`). The sign-in screen follows Oryx StockFlow's design.
+- Zoho: only through the `estimation-zoho` Supabase Edge Function (`supabase/functions/`), which holds the Zoho MCP link as the `ZOHO_MCP_URL` secret and checks the caller is an Admin. Never put the link in code or the browser.
 - Pricing engine as pure functions in `src/engine/`, with no UI code in that folder.
 - Settings and pricing rules in `data/pricing-rules.json`, editable on a Settings screen.
 - Door price chart (`doorChart` in `data/pricing-rules.json`, maths in `src/engine/doorChart.ts`): AED/m² by bilinear interpolation over the production costing grid, from the Single Door Order Estimator workbook. A line item can take its supplier price from it.

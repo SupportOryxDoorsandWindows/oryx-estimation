@@ -51,7 +51,8 @@ const today = () => new Date().toISOString().slice(0, 10)
 export function blankProposal(): ProposalDetails {
   const d: ProposalDetails = {}
   for (const f of PROPOSAL_FIELDS) d[f.key] = f.type === 'checkbox' ? false : f.type === 'number' ? 0 : ''
-  return { ...d, proposalOwner: 'Business Support', priority: 'High', quoteStatus: 'Not Started', expectedCompletionDate: today(), proposalDate: today() }
+  // crmDealId and crmFilled are not form fields: the linked Zoho CRM deal, and which fields came from Zoho.
+  return { ...d, proposalOwner: 'Business Support', priority: 'High', quoteStatus: 'Not Started', expectedCompletionDate: today(), proposalDate: today(), crmDealId: '', crmFilled: '' }
 }
 
 /** Labels of required fields that are still empty. */

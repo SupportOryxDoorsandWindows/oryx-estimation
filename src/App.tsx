@@ -5,6 +5,7 @@ import { fmtAed } from './engine/format'
 import type { LineItemInput, PricingRules, Product } from './engine/types'
 import { buildWorkbook, parseProducts, parseWorkbook } from './io/workbook'
 import { downloadWorkbook, pickWorkbook } from './ui/excelFile'
+import type { SignedInUser } from './auth/supabase'
 import { Card } from './ui/fields'
 import { Icon, type IconName } from './ui/icons'
 import { LineItemForm } from './ui/LineItemForm'
@@ -15,9 +16,14 @@ import { DoorChartScreen } from './ui/DoorChartScreen'
 import { RevisionScreen } from './ui/RevisionScreen'
 import { SettingsScreen } from './ui/SettingsScreen'
 import {
-  defaultRules, type Estimate, loadEstimates, loadProducts, loadRole, loadRules,
-  newEstimate, normaliseEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRole, saveRules,
+  defaultRules, type Estimate, loadEstimates, loadProducts, loadRules,
+  newEstimate, normaliseEstimate, normaliseItem, type Role, saveEstimates, saveProducts, saveRules,
 } from './ui/storage'
+
+function initials(email: string): string {
+  const words = (email.split('@')[0] ?? '').split(/[._-]+/).filter(Boolean)
+  return (words.length > 1 ? words[0][0] + words[1][0] : (words[0] ?? '').slice(0, 2)).toUpperCase() || '?'
+}
 
 type View = 'estimate' | 'saved' | 'revisions' | 'doors' | 'settings'
 
@@ -36,13 +42,14 @@ const NAV: { title: string; items: { view: View; label: string; icon: IconName }
 
 const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-export default function App() {
+export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut: () => void }) {
   const [view, setView] = useState<View>('estimate')
   const [menuOpen, setMenuOpen] = useState(false)
   const [rules, setRules] = useState<PricingRules>(loadRules)
   const [products, setProducts] = useState<Product[]>(loadProducts)
   const [estimates, setEstimates] = useState<Estimate[]>(() => loadEstimates().map(normaliseEstimate))
-  const [role, setRole] = useState<Role>(loadRole)
+  // Only Admins can sign in for now, and Admins have manager rights (markup, base rates).
+  const role: Role = 'manager'
   const [current, setCurrent] = useState<Estimate>(() => { const e = loadEstimates()[0]; return e ? normaliseEstimate(e) : newEstimate() })
   const [itemIndex, setItemIndex] = useState(0)
   const [message, setMessage] = useState('')
@@ -52,7 +59,6 @@ export default function App() {
   useEffect(() => saveRules(rules), [rules])
   useEffect(() => saveProducts(products), [products])
   useEffect(() => saveEstimates(estimates), [estimates])
-  useEffect(() => saveRole(role), [role])
 
   const item = current.items[itemIndex] ?? current.items[0]
   const results = current.items.map((i) => calculateLineItem(i, rules))
@@ -171,13 +177,10 @@ export default function App() {
             ))}
 
             <div className="nav-user">
-              <div className="avatar" aria-hidden="true">{role === 'manager' ? 'MG' : 'ES'}</div>
+              <div className="avatar" aria-hidden="true">{initials(user.email)}</div>
               <div className="nav-user-text">
-                <label htmlFor="role" className="nav-user-label">Signed in as</label>
-                <select id="role" value={role} onChange={(e) => setRole(e.target.value as Role)}>
-                  <option value="estimator">Estimator</option>
-                  <option value="manager">Manager</option>
-                </select>
+                <span className="nav-user-email" title={user.email}>{user.email}</span>
+                <span className="nav-user-label">Admin · <button type="button" className="nav-signout" onClick={onSignOut}>Sign out</button></span>
               </div>
             </div>
           </div>
