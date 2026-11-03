@@ -58,7 +58,10 @@ Sending estimate BOQs back to Zoho is Phase 3 (BOQ generation).
 1. **Creator tools on the MCP server.** The tools listed so far are CRM tools only. Creator (read, add and update records) must be linked.
 2. **Custom API for the copy button.** Its name, authentication, input (original proposal ID) and output (new proposal ID, and which new BOQ line came from which original).
 3. **Field link names of BOQ values.** Several look duplicated (Width / Width1, Height / Height2, Quantity / Quantity1 and others). To be read from one real record through MCP, read-only.
-4. **Users.** Names and emails of the sales support staff, and whether they get a separate "Estimator" role in the Fleet Supabase project.
+
+## Deferred
+- **Users and roles** (who gets an account, and whether there is a separate "Estimator" role). On hold at Oryx's request, 3 November 2026. Needed before the live connection is opened to staff.
+
 
 ## Interface the live source implements
 - `searchDeals(query)`: CRM Deals search.
