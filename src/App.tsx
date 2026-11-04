@@ -50,7 +50,8 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
   const [estimates, setEstimates] = useState<Estimate[]>(() => loadEstimates().map(normaliseEstimate))
   // Only Admins can sign in for now, and Admins have manager rights (markup, base rates).
   const role: Role = 'manager'
-  const [current, setCurrent] = useState<Estimate>(() => { const e = loadEstimates()[0]; return e ? normaliseEstimate(e) : newEstimate() })
+  // Every visit starts with a blank estimate; saved ones open from Saved estimates.
+  const [current, setCurrent] = useState<Estimate>(newEstimate)
   const [itemIndex, setItemIndex] = useState(0)
   const [message, setMessage] = useState('')
   const [messageTone, setMessageTone] = useState<'ok' | 'warn' | 'error'>('ok')
