@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { doorRate } from '../engine/doorChart'
 import { fmtAed, fmtNum } from '../engine/format'
-import type { DoorChart, Product } from '../engine/types'
+import type { DoorChart } from '../engine/types'
 import { DoorChartTable } from './DoorChartTable'
 
-/** Door products get the price chart in their Pricing section. */
-export const isDoorProduct = (p: Product | undefined) => !!p && /door/i.test(`${p.type} ${p.name}`)
+export { isDoorProduct } from '../engine/defaults'
 
 const nearest = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Math.round(v / 100) * 100))
 

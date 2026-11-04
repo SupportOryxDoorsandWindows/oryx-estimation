@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import productsJson from '../../data/products.json'
 import rulesJson from '../../data/pricing-rules.json'
 import { calculateLineItem } from './calculate'
-import { blankLineItem } from './defaults'
+import { applyRuleDefaults, blankLineItem, matchRule } from './defaults'
 import { chartSizes, doorRate } from './doorChart'
-import type { PricingRules } from './types'
+import type { PricingRules, Product } from './types'
 
 const rules = rulesJson as PricingRules
 const chart = rules.doorChart
@@ -79,5 +80,25 @@ describe('Door chart: Profile reference and Pricing', () => {
   it('ignores Pricing when the line is not on the door chart', () => {
     const r = calculateLineItem({ ...base, priceSource: 'entered', supplierPrice: 5000, doorPricing: 1800 }, rules)
     expect(r.profileCost).toBe(5000)
+  })
+})
+
+describe('Door products use the door chart automatically', () => {
+  const products = (productsJson as { products: Product[] }).products
+  const pick = (code: string) => {
+    const p = products.find((x) => x.oryxCode === code)!
+    return applyRuleDefaults({ ...blankLineItem(), productId: p.id }, matchRule(p, rules), rules, p)
+  }
+
+  it('switches an AED-priced door to the door chart', () => {
+    expect(pick('Al Taqwa-Fusion-D50 Single Door (Arched)-Single Door').priceSource).toBe('doorChart')
+  })
+
+  it('keeps the supplier quote for a door quoted in GBP', () => {
+    expect(pick('Origin-Origin-OB36+-Single Door').priceSource).toBe('entered')
+  })
+
+  it('does not use the door chart for windows or curtain walls', () => {
+    expect(pick('Insulux-Fusion-C35 Reinforced-Curtain Wall').priceSource).toBe('entered')
   })
 })

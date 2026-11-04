@@ -51,7 +51,14 @@ export function matchRule(product: Product | undefined, rules: PricingRules): Pr
   return noKeywords ?? other
 }
 
-/** Applies a rule's defaults (markup, freight, other charges) to a line item. */
+/** Door products (type or name contains "door") can be priced from the door price chart. */
+export const isDoorProduct = (p: Product | undefined) => !!p && /door/i.test(`${p.type} ${p.name}`)
+
+/**
+ * Applies a rule's defaults (markup, freight, other charges) to a line item.
+ * A door priced in AED (AED/m² or manual) takes its supplier price from the door price chart;
+ * doors quoted in GBP or EUR keep their supplier quote.
+ */
 export function applyRuleDefaults(
   item: LineItemInput,
   rule: PricingRule,
@@ -72,6 +79,8 @@ export function applyRuleDefaults(
     markup,
     freight,
     otherCharges: rule.otherCharges ?? item.otherCharges,
+    priceSource: isDoorProduct(product) && (rule.costMethod === 'aedPerSqm' || rule.costMethod === 'manual') ? 'doorChart' : 'entered',
+    doorPricing: null,
     // Bonding charges are entered as a plain amount; there is no automatic curtain-wall rate (4 Nov 2026).
   }
 }
