@@ -30,10 +30,10 @@ export interface DealDetails {
 }
 
 const MESSAGES: Record<string, string> = {
-  admins_only: 'Only Admins can look up Zoho deals. Sign in again with an Admin account.',
+  admins_only: 'Only Admins can look up Zoho opportunities. Sign in again with an Admin account.',
   zoho_not_configured: 'The Zoho connection is not set up yet (ZOHO_MCP_URL secret missing).',
   zoho_unavailable: 'Zoho did not answer. Try again in a moment.',
-  deal_not_found: 'That deal was not found in Zoho CRM.',
+  deal_not_found: 'That opportunity was not found in Zoho CRM.',
 }
 
 async function call<T>(body: Record<string, unknown>): Promise<T> {

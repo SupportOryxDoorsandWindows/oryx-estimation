@@ -1,4 +1,4 @@
-// Proposal details, mirroring the Zoho "Deal Information" and "Proposal Information" forms.
+// Proposal details, mirroring the Zoho "Deal Information" (shown as Opportunity information) and "Proposal Information" forms.
 // One list drives the form, the Excel sheet and the import, so they stay in step.
 
 export type ProposalFieldType = 'text' | 'textarea' | 'number' | 'date' | 'email' | 'tel' | 'checkbox' | 'select'
@@ -14,12 +14,14 @@ export interface ProposalField {
   /** Suggestions for a free-text field. */
   suggestions?: string[]
   wide?: boolean
+  /** Earlier label, still accepted when importing older Excel exports. */
+  legacyLabel?: string
 }
 
 export const PROPOSAL_FIELDS: ProposalField[] = [
   { key: 'additionalWorksVariation', label: 'For Additional Works Variation', group: 'deal', type: 'checkbox', wide: true },
-  { key: 'dealName', label: 'Deal Name', group: 'deal', type: 'text', required: true },
-  { key: 'dealOwner', label: 'Deal Owner', group: 'deal', type: 'text' },
+  { key: 'dealName', label: 'Opportunity Name', legacyLabel: 'Deal Name', group: 'deal', type: 'text', required: true },
+  { key: 'dealOwner', label: 'Opportunity Owner', legacyLabel: 'Deal Owner', group: 'deal', type: 'text' },
   { key: 'contactName', label: 'Contact Name', group: 'deal', type: 'text' },
   { key: 'companyName', label: 'Company Name', group: 'deal', type: 'text' },
   { key: 'proposalNumber', label: 'Proposal Number', group: 'deal', type: 'text' },
@@ -29,8 +31,8 @@ export const PROPOSAL_FIELDS: ProposalField[] = [
   { key: 'orderValueInCrm', label: 'Order Value in CRM (AED)', group: 'deal', type: 'number' },
   { key: 'locationTag', label: 'Location Tag', group: 'deal', type: 'text' },
   { key: 'address', label: 'Address', group: 'deal', type: 'textarea', required: true, wide: true },
-  { key: 'dealOwnerEmail', label: 'Deal Owner Email', group: 'deal', type: 'email' },
-  { key: 'dealOwnerNumber', label: 'Deal Owner Number', group: 'deal', type: 'tel' },
+  { key: 'dealOwnerEmail', label: 'Opportunity Owner Email', legacyLabel: 'Deal Owner Email', group: 'deal', type: 'email' },
+  { key: 'dealOwnerNumber', label: 'Opportunity Owner Number', legacyLabel: 'Deal Owner Number', group: 'deal', type: 'tel' },
   { key: 'proposalReference', label: 'Proposal Reference', group: 'deal', type: 'text' },
   { key: 'proposalReferenceNumber', label: 'Proposal Reference Number', group: 'deal', type: 'text' },
   { key: 'projectName', label: 'Project Name', group: 'deal', type: 'text' },

@@ -312,8 +312,9 @@ export function parseProducts(sheets: ReadSheet[]): Product[] {
 function readProposal(row: Record<string, unknown>): ProposalDetails {
   const d = blankProposal()
   for (const f of PROPOSAL_FIELDS) {
-    if (!(f.label in row)) continue
-    const v = row[f.label]
+    const title = f.label in row ? f.label : f.legacyLabel && f.legacyLabel in row ? f.legacyLabel : null
+    if (!title) continue
+    const v = row[title]
     d[f.key] = f.type === 'checkbox' ? bool(v)
       : f.type === 'number' ? num(v)
       : f.type === 'date' && v instanceof Date ? v.toISOString().slice(0, 10)

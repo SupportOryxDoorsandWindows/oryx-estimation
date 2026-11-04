@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { dealDetails, searchDeals, type DealDetails, type DealHit } from '../zoho/crm'
 
-/** Deal Name field: type to search Zoho CRM deals, pick one to fill the deal information. */
+/** Opportunity Name field: type to search Zoho CRM opportunities (Deals), pick one to fill the opportunity information. */
 export function DealLookup({ value, onType, onPick }: {
   value: string
   onType: (name: string) => void
@@ -23,7 +23,7 @@ export function DealLookup({ value, onType, onPick }: {
     setStatus('Searching Zoho CRM…')
     const t = setTimeout(() => {
       searchDeals(q)
-        .then((d) => { if (!live) return; setHits(d); setActive(0); setStatus(d.length ? '' : 'No CRM deals match.') })
+        .then((d) => { if (!live) return; setHits(d); setActive(0); setStatus(d.length ? '' : 'No CRM opportunities match.') })
         .catch((e: Error) => live && (setHits([]), setStatus(e.message)))
     }, 350)
     return () => { live = false; clearTimeout(t) }
@@ -32,7 +32,7 @@ export function DealLookup({ value, onType, onPick }: {
   const pick = async (hit: DealHit) => {
     setOpen(false)
     typed.current = false
-    setStatus('Loading the deal from Zoho…')
+    setStatus('Loading the opportunity from Zoho…')
     try {
       onPick(await dealDetails(hit.id))
       setStatus('')
@@ -49,7 +49,7 @@ export function DealLookup({ value, onType, onPick }: {
         aria-expanded={open && hits.length > 0}
         aria-controls={listId}
         aria-autocomplete="list"
-        placeholder="Type to search Zoho CRM deals"
+        placeholder="Type to search Zoho CRM opportunities"
         value={value}
         onChange={(e) => { typed.current = true; onType(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}

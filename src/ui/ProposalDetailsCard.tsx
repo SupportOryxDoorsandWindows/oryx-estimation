@@ -38,7 +38,7 @@ function Input({ field, value, onChange }: { field: ProposalField; value: string
 }
 
 const GROUPS = [
-  { id: 'deal', title: 'Deal information' },
+  { id: 'deal', title: 'Opportunity information' },
   { id: 'proposal', title: 'Proposal information' },
 ] as const
 

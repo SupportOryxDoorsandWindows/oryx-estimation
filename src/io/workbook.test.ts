@@ -135,3 +135,19 @@ describe('Glass type', () => {
     expect(estimates![0].items[0].glassType).toBe('Jumbo')
   })
 })
+
+describe('Opportunity labels', () => {
+  it('still imports Proposal details sheets exported with the old "Deal" titles', async () => {
+    const sheets = await roundTrip([{ sheet: 'Proposal details', data: [
+      ['Estimate ID', 'Estimate name', 'Deal Name', 'Deal Owner', 'Deal Owner Email', 'Deal Owner Number'],
+      ['old-1', 'Old export', 'OC00001 Test Villa', 'Sales Person', 's@example.com', '+971 50 000 0000'],
+    ] }])
+    const [e] = parseWorkbook(sheets, rules).estimates!
+    expect(e.details).toMatchObject({ dealName: 'OC00001 Test Villa', dealOwner: 'Sales Person', dealOwnerEmail: 's@example.com', dealOwnerNumber: '+971 50 000 0000' })
+  })
+
+  it('exports the new Opportunity titles', () => {
+    const sheet = buildWorkbook([cw011], rules, products).find((s) => s.sheet === 'Proposal details')!
+    expect(sheet.data[0]).toEqual(expect.arrayContaining(['Opportunity Name', 'Opportunity Owner', 'Opportunity Owner Email', 'Opportunity Owner Number']))
+  })
+})

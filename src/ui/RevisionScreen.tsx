@@ -126,11 +126,11 @@ export function RevisionScreen({ rules, products, notify }: { rules: PricingRule
 
   useEffect(() => {
     let live = true
-    if (source.live && dealQuery.trim().length < 2) { setDeals([]); setDealStatus('Type at least 2 letters of the deal name.'); return }
+    if (source.live && dealQuery.trim().length < 2) { setDeals([]); setDealStatus('Type at least 2 letters of the opportunity name.'); return }
     setDealStatus(source.live ? 'Searching Zoho CRM…' : '')
     const t = setTimeout(() => {
       source.searchDeals(dealQuery)
-        .then((d) => { if (!live) return; setDeals(d.slice(0, 20)); setDealStatus(d.length ? '' : 'No deals match.') })
+        .then((d) => { if (!live) return; setDeals(d.slice(0, 20)); setDealStatus(d.length ? '' : 'No opportunities match.') })
         .catch((e: Error) => live && (setDeals([]), setDealStatus(e.message)))
     }, source.live ? 350 : 0)
     return () => { live = false; clearTimeout(t) }
@@ -203,8 +203,8 @@ export function RevisionScreen({ rules, products, notify }: { rules: PricingRule
       <Card title="Select the accepted proposal">
         <div className="grid">
           <div className="field span-2">
-            <span className="field-label">Deal Name</span>
-            <input type="search" value={dealQuery} placeholder={source.live ? 'Search Zoho CRM deals' : 'Search deals'} onChange={(e) => setDealQuery(e.target.value)} />
+            <span className="field-label">Opportunity Name</span>
+            <input type="search" value={dealQuery} placeholder={source.live ? 'Search Zoho CRM opportunities' : 'Search opportunities'} onChange={(e) => setDealQuery(e.target.value)} />
             <div className="choice-list">
               {dealStatus && <span className="muted small">{dealStatus}</span>}
               {deals.map((d) => (
@@ -220,7 +220,7 @@ export function RevisionScreen({ rules, products, notify }: { rules: PricingRule
             <div className="field span-2">
               <span className="field-label">Accepted proposal</span>
               <div className="choice-list">
-                {accepted.length === 0 && <span className="muted small">This deal has no accepted proposal.</span>}
+                {accepted.length === 0 && <span className="muted small">This opportunity has no accepted proposal.</span>}
                 {accepted.map((p) => (
                   <button key={p.reference} type="button" disabled={busy} className={`choice-item ${draft?.source.reference === p.reference ? 'on' : ''}`} onClick={() => open(p)}>
                     <strong>{p.reference}</strong> <span className="muted">· {p.status}{p.lineCount ? ` · ${p.lineCount} lines` : ''}{p.total ? ` · AED ${fmtAed(Math.round(p.total))}` : ''}</span>
