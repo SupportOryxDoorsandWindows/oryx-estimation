@@ -10,10 +10,8 @@ const numericSettings: { key: keyof Settings; label: string }[] = [
   { key: 'gbpToAed', label: 'GBP to AED' },
   { key: 'eurToAed', label: 'EUR to AED' },
   { key: 'inothermDiscount', label: 'Inotherm discount (0–1)' },
-  { key: 'curtainWallBondingRate', label: 'Curtain wall bonding rate (AED/m²)' },
   { key: 'glassDensityKgPerSqmPerMm', label: 'Glass weight factor (kg/m²/mm)' },
   { key: 'defaultMarkupOther', label: 'Markup for products outside the pricing sheet' },
-  { key: 'insuranceRate', label: 'Insurance rate (0–1)' },
 ]
 
 export function SettingsScreen({ rules, onChange }: Props) {
@@ -31,12 +29,6 @@ export function SettingsScreen({ rules, onChange }: Props) {
             <select value={s.rounding} onChange={(e) => setS('rounding', e.target.value as Settings['rounding'])}>
               <option value="floor">Floor each component (live system)</option>
               <option value="round">Round each component (Excel)</option>
-            </select>
-          </Field>
-          <Field label="Bonding default" badge={unconfirmed.has('bondingDefault')}>
-            <select value={s.bondingDefault} onChange={(e) => setS('bondingDefault', e.target.value as Settings['bondingDefault'])}>
-              <option value="curtainWallPerSqm">Curtain walls: rate per m²</option>
-              <option value="manual">Always manual</option>
             </select>
           </Field>
           {numericSettings.map(({ key, label }) => (

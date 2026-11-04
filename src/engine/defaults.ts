@@ -49,7 +49,7 @@ export function matchRule(product: Product | undefined, rules: PricingRules): Pr
   return noKeywords ?? other
 }
 
-/** Applies a rule's defaults (markup, freight, other charges, bonding) to a line item. */
+/** Applies a rule's defaults (markup, freight, other charges) to a line item. */
 export function applyRuleDefaults(
   item: LineItemInput,
   rule: PricingRule,
@@ -64,15 +64,13 @@ export function applyRuleDefaults(
       : rule.freight.type === 'fixed'
         ? rule.freight.value
         : item.freight
-  const isCurtainWall = !!product && /curtain wall|\bc35\b/i.test(`${product.type} ${product.name}`)
-  const bondingPerSqm = s.bondingDefault === 'curtainWallPerSqm' && isCurtainWall
   return {
     ...item,
     ruleId: rule.id,
     markup,
     freight,
     otherCharges: rule.otherCharges ?? item.otherCharges,
-    bondingMode: bondingPerSqm ? 'perSqm' : 'amount',
-    bondingRate: bondingPerSqm ? s.curtainWallBondingRate : item.bondingRate,
+    // Bonding is no longer entered in the app (removed 4 Nov 2026), so no default is applied;
+    // a bonding amount only comes in with Zoho BOQ lines.
   }
 }

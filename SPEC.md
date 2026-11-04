@@ -26,6 +26,8 @@ A standalone web app where estimators enter a line item (product, dimensions, gl
 | Margin change | Multiplier, default 1.00 |
 | Salesperson price | Optional. Shown next to the calculated rate and never overwrites it. |
 
+**Change, 4 November 2026 (Production):** Bonding charges, Insurance and Duties are no longer entered in the app, and the curtain-wall bonding default (§4.1) and insurance rate (§4.5) are no longer settings. The formulas below still apply them when a Zoho BOQ line carries a value, so imported and live Zoho proposals keep matching Zoho. A new estimate entered by hand has no bonding, insurance or duties.
+
 ## 2. Core formulas (from CW01.1)
 
 ```

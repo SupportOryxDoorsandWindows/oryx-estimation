@@ -151,17 +151,6 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
         <Card title="Other costs" id="sec-other">
           <div className="grid">
-            <Field label="Bonding" badge={unconfirmed.has('bondingDefault')}>
-              <select value={item.bondingMode} onChange={(e) => set('bondingMode', e.target.value as LineItemInput['bondingMode'])}>
-                <option value="perSqm">Rate per m²</option>
-                <option value="amount">Fixed amount</option>
-              </select>
-            </Field>
-            {item.bondingMode === 'perSqm' ? (
-              <Field label="Bonding rate (AED/m²)"><NumberInput value={item.bondingRate} onChange={(v) => set('bondingRate', v)} /></Field>
-            ) : (
-              <Field label="Bonding charges (AED)"><NumberInput value={item.bondingAmount} onChange={(v) => set('bondingAmount', v)} /></Field>
-            )}
             <Field
               label="Freight (AED)"
               hint={rule.freight.type === 'perPanel' ? `Default: AED ${fmtAed(rule.freight.value)} per panel` : undefined}
@@ -173,15 +162,6 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             </Field>
             <Field label="Installation (AED)"><NumberInput value={item.installation} onChange={(v) => set('installation', v)} /></Field>
             <Field label="Equipment rental (AED)"><NumberInput value={item.equipmentRental} onChange={(v) => set('equipmentRental', v)} /></Field>
-            <Field label="Duties (%)" badge={unconfirmed.has('percentageBase')}>
-              <NumberInput value={item.dutiesPercent} onChange={(v) => set('dutiesPercent', v)} />
-            </Field>
-            <Field label={`Insurance (${fmtNum(rules.settings.insuranceRate * 100)}%)`} badge={unconfirmed.has('insuranceRate')}>
-              <select value={item.insuranceEnabled ? 'yes' : 'no'} onChange={(e) => set('insuranceEnabled', e.target.value === 'yes')}>
-                <option value="no">Not applied</option>
-                <option value="yes">Applied</option>
-              </select>
-            </Field>
           </div>
 
           <h3>Accessories</h3>
@@ -212,7 +192,11 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               />
             </Field>
           </div>
-          <Calc result={result} keys={['bonding', 'freight', 'otherCharges', 'accessories', 'installation', 'equipment', 'insurance', 'duties']} />
+          {/* Bonding, insurance and duties are no longer entered here; they show only when a Zoho BOQ line carries them. */}
+          <Calc result={result} keys={[
+            ...(result.bonding ? ['bonding'] : []), 'freight', 'otherCharges', 'accessories', 'installation', 'equipment',
+            ...(result.insurance ? ['insurance'] : []), ...(result.duties ? ['duties'] : []),
+          ]} />
         </Card>
       </div>
 
