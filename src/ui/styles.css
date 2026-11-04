@@ -348,3 +348,4 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .door-panel-table .door-chart thead th.costed { background: var(--tint); }
 .cell-val { display: block; padding: 8px 12px; text-align: right; font-variant-numeric: tabular-nums; }
 .door-panel-table thead th { box-shadow: inset 0 -1px 0 var(--line); }
+.dual-colour { align-self: end; min-height: 44px; }

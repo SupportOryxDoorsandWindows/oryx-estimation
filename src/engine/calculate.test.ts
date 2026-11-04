@@ -120,3 +120,19 @@ describe('Manpower charges', () => {
     expect(withManpower.steps.find((s) => s.key === 'subtotal')?.formula).toContain('manpower')
   })
 })
+
+describe('Dual colour', () => {
+  it('adds 10% of the profile price only', () => {
+    const plain = calculateLineItem(cw011(), rules)
+    const dual = calculateLineItem({ ...cw011(), dualColour: true }, rules)
+    expect(dual.dualColour).toBe(Math.floor(32239 * 0.1)) // 3,223
+    expect(dual.glassCost).toBe(plain.glassCost)
+    expect(dual.rate).toBe(50225 + 3223)
+    expect(dual.steps.find((s) => s.key === 'dualColour')?.formula).toBe('floor(32,239 × 10%)')
+    expect(dual.steps.find((s) => s.key === 'subtotal')?.formula).toContain('dual colour')
+  })
+
+  it('adds nothing when not ticked', () => {
+    expect(calculateLineItem(cw011(), rules).dualColour).toBe(0)
+  })
+})

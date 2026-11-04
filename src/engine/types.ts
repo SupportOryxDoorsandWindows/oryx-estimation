@@ -15,6 +15,8 @@ export interface Settings {
   percentageBase: 'subtotalBeforeDiscount'
   warnNegativeOtherCharges: boolean
   warnBelowStandardPricing: boolean
+  /** Added to the profile price when a line item is dual colour (0.1 = 10%). */
+  dualColourSurcharge: number
 }
 
 export interface PricingRule {
@@ -96,6 +98,8 @@ export interface LineItemInput {
   glazingSpec: string
   /** Standard, Special or Jumbo; '' until chosen. Does not change the price yet. */
   glassType: GlassType
+  /** Dual colour frames: adds the dual colour surcharge (10%) to the profile price. */
+  dualColour: boolean
   bondingMode: 'perSqm' | 'amount'
   bondingRate: number
   bondingAmount: number
@@ -127,6 +131,7 @@ export interface LineItemResult {
   area: number
   profileCost: number
   profilePrice: number
+  dualColour: number
   glassCost: number
   bonding: number
   glassWeightKg: number

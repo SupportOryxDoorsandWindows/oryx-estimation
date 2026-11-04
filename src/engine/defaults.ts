@@ -19,6 +19,7 @@ export function blankLineItem(): LineItemInput {
     glassThicknessMm: 0,
     glazingSpec: '',
     glassType: '',
+    dualColour: false,
     bondingMode: 'amount',
     bondingRate: 0,
     bondingAmount: 0,

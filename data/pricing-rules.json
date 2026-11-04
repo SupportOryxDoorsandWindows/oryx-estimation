@@ -14,7 +14,8 @@
     "insuranceRate": 0.01,
     "percentageBase": "subtotalBeforeDiscount",
     "warnNegativeOtherCharges": true,
-    "warnBelowStandardPricing": true
+    "warnBelowStandardPricing": true,
+    "dualColourSurcharge": 0.1
   },
   "unconfirmed": [
     "rounding",

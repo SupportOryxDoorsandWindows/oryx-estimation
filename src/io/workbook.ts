@@ -57,6 +57,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'Margin change', key: 'marginChange', width: 9, get: (_e, i) => i.marginChange },
   { title: 'Glass rate (AED/m²)', key: 'glassRate', width: 11, get: (_e, i) => i.glassRate },
   { title: 'Glass thickness (mm)', key: 'glassThicknessMm', width: 11, get: (_e, i) => i.glassThicknessMm },
+  { title: 'Dual colour', key: 'dualColour', width: 9, get: (_e, i) => yesNo(!!i.dualColour) },
   { title: 'Glass type', key: 'glassType', width: 10, get: (_e, i) => i.glassType ?? '' },
   { title: 'Glazing spec', key: 'glazingSpec', width: 16, get: (_e, i) => i.glazingSpec },
   { title: 'Bonding mode', key: 'bondingMode', width: 11, get: (_e, i) => (i.bondingMode === 'perSqm' ? 'Per m²' : 'Amount') },
@@ -92,6 +93,7 @@ const CALC_COLS: { title: string; get: (r: ReturnType<typeof calculateLineItem>)
 
 const SETTING_LABELS: Record<keyof Settings, string> = {
   rounding: 'Rounding (floor or round)',
+  dualColourSurcharge: 'Dual colour surcharge on profile price (0–1)',
   gbpToAed: 'GBP to AED',
   eurToAed: 'EUR to AED',
   inothermDiscount: 'Inotherm discount (0–1)',
@@ -212,6 +214,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
           case 'bondingMode': item.bondingMode = /m²|sqm|per/i.test(str(v)) ? 'perSqm' : 'amount'; break
           case 'discountMode': item.discountMode = /percent|%/i.test(str(v)) ? 'percent' : 'amount'; break
           case 'insuranceEnabled': item.insuranceEnabled = bool(v); break
+          case 'dualColour': item.dualColour = bool(v); break
           case 'salespersonPrice': item.salespersonPrice = str(v) === '' ? null : num(v) || null; break
           case 'zohoAmount': if (str(v) !== '') item.zohoAmount = num(v); break
           case 'priceSource': item.priceSource = /door/i.test(str(v)) ? 'doorChart' : 'entered'; break

@@ -178,8 +178,12 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               <NumberInput value={item.markup} disabled={role !== 'manager'} onChange={(v) => set('markup', v)} />
             </Field>
             <Field label="Margin change"><NumberInput value={item.marginChange} onChange={(v) => set('marginChange', v)} /></Field>
+            <label className="check-field dual-colour">
+              <input type="checkbox" className="check" checked={!!item.dualColour} onChange={(e) => set('dualColour', e.target.checked)} />
+              Dual colour <span className="muted small">(+{fmtNum((rules.settings.dualColourSurcharge ?? 0.1) * 100)}% on profile price)</span>
+            </label>
           </div>
-          <Calc result={result} keys={['doorRate', 'doorPricing', 'profileCost', 'profilePrice']} />
+          <Calc result={result} keys={['doorRate', 'doorPricing', 'profileCost', 'profilePrice', 'dualColour']} />
           {isDoorProduct(product) && (
             <DoorChartPanel
               chart={rules.doorChart}

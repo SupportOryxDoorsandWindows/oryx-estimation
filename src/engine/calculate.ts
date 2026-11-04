@@ -72,6 +72,10 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
     'profilePrice', 'Profile price (AED)', rnd(profileCost * input.markup),
     `${rLabel}(${fmtNum(profileCost)} × ${fmtNum(input.markup)})`,
   )
+  const surcharge = s.dualColourSurcharge ?? 0.1
+  const dualColour = input.dualColour
+    ? step('dualColour', 'Dual colour (AED)', rnd(profilePrice * surcharge), `${rLabel}(${fmtAed(profilePrice)} × ${fmtNum(surcharge * 100)}%)`)
+    : 0
 
   const glassCost = rule.glassLine
     ? step('glassCost', 'Glass cost (AED)', rnd(area * input.glassRate),
@@ -100,7 +104,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
   const equipmentRental = step('equipment', 'Equipment rental (AED)', rnd(input.equipmentRental), 'Entered amount')
 
   // SPEC §4.5: percentages use the subtotal before discount (excluding insurance and duties).
-  const base = profilePrice + glassCost + bonding + freight + otherCharges + accessories + installation + manpower + equipmentRental
+  const base = profilePrice + dualColour + glassCost + bonding + freight + otherCharges + accessories + installation + manpower + equipmentRental
   const insurance = input.insuranceEnabled
     ? step('insurance', 'Insurance (AED)', rnd(base * s.insuranceRate),
         `${rLabel}(${fmtAed(base)} × ${fmtNum(s.insuranceRate * 100)}%)`)
@@ -111,7 +115,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
   )
 
   // Insurance and duties are not entered in the app any more; they appear only when a Zoho BOQ line carries them.
-  const parts = ['Profile price', 'glass', 'bonding', 'freight', 'other', 'accessories', 'installation', 'manpower', 'equipment',
+  const parts = ['Profile price', ...(dualColour ? ['dual colour'] : []), 'glass', 'bonding', 'freight', 'other', 'accessories', 'installation', 'manpower', 'equipment',
     ...(insurance ? ['insurance'] : []), ...(duties ? ['duties'] : [])]
   const subtotal = step('subtotal', 'Subtotal (AED)', base + insurance + duties, parts.join(' + '))
   const subtotalAfterMargin = step(
@@ -144,7 +148,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
     warnings.push(`Other charges are negative (AED ${fmtAed(otherCharges)}). Confirm whether this is a discount.`)
 
   return {
-    area, profileCost, profilePrice, glassCost, bonding, glassWeightKg, freight, otherCharges,
+    area, profileCost, profilePrice, dualColour, glassCost, bonding, glassWeightKg, freight, otherCharges,
     accessories, installation, manpower, equipmentRental, insurance, duties, subtotal, subtotalAfterMargin,
     discountAmount, discountPercent, rate, amount, pricePerSqm, steps, warnings,
   }
