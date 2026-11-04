@@ -144,12 +144,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
         <Card title="Pricing" id="sec-pricing" aside={rule.label}>
           <div className="grid">
-            <Field label="Supplier price from">
-              <select value={item.priceSource} onChange={(e) => set('priceSource', e.target.value as LineItemInput['priceSource'])}>
-                <option value="entered">Entered below</option>
-                <option value="doorChart">Door price chart ({rules.doorChart.label.toLowerCase()})</option>
-              </select>
-            </Field>
+            {/* Where the supplier price comes from is set by the product: AED-priced doors use the door chart. */}
             {item.priceSource === 'doorChart' ? (
               <>
                 <Field
@@ -191,7 +186,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               heightMm={item.heightMm}
               inUse={item.priceSource === 'doorChart'}
               pricing={item.doorPricing}
-              onUse={() => set('priceSource', 'doorChart')}
+              quotedIn={rule.costMethod === 'gbp' ? 'GBP supplier quote' : rule.costMethod === 'eur' || rule.costMethod === 'eurDiscounted' ? 'EUR supplier quote' : 'supplier price'}
             />
           )}
         </Card>
