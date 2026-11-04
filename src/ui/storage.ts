@@ -52,13 +52,22 @@ export const loadRules = (): PricingRules => {
 
 /** Brings rules saved under an older version up to date, keeping anything the user changed. */
 export function migrateRules(rules: PricingRules, seed: PricingRules): PricingRules {
-  if ((rules.version ?? 1) >= seed.version) return rules
+  const from = rules.version ?? 1
+  if (from >= seed.version) return rules
   const r = structuredClone(rules)
-  // v2: markup for products outside the pricing sheet 2.5 → 2.85, now confirmed.
-  if (r.settings.defaultMarkupOther === 2.5) r.settings.defaultMarkupOther = 2.85
-  const other = r.rules.find((x) => x.id === 'other')
-  if (other && other.markup === 2.5) other.markup = 2.85
-  r.unconfirmed = r.unconfirmed.filter((k) => k !== 'defaultMarkupOther')
+  if (from < 2) {
+    // v2: markup for products outside the pricing sheet 2.5 → 2.85, now confirmed.
+    if (r.settings.defaultMarkupOther === 2.5) r.settings.defaultMarkupOther = 2.85
+    const other = r.rules.find((x) => x.id === 'other')
+    if (other && other.markup === 2.5) other.markup = 2.85
+    r.unconfirmed = r.unconfirmed.filter((k) => k !== 'defaultMarkupOther')
+  }
+  if (from < 3) {
+    // v3: glass area, glass weight factor, negative other charges and the discount % base confirmed;
+    // the bonding default, curtain wall bonding rate and insurance rate are no longer settings.
+    const gone = ['glassAreaBasis', 'glassDensityKgPerSqmPerMm', 'warnNegativeOtherCharges', 'percentageBase', 'curtainWallBondingRate', 'bondingDefault', 'insuranceRate']
+    r.unconfirmed = r.unconfirmed.filter((k) => !gone.includes(k))
+  }
   return { ...r, version: seed.version }
 }
 export const saveRules = (r: PricingRules) => write(KEYS.rules, r)

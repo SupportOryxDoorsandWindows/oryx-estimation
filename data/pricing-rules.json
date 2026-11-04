@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "source": "SPEC.md §3 (PRICING-FORMULAS.xlsx) and §4 open rules",
   "settings": {
     "rounding": "floor",
@@ -18,13 +18,6 @@
   },
   "unconfirmed": [
     "rounding",
-    "curtainWallBondingRate",
-    "bondingDefault",
-    "glassAreaBasis",
-    "glassDensityKgPerSqmPerMm",
-    "insuranceRate",
-    "percentageBase",
-    "warnNegativeOtherCharges",
     "warnBelowStandardPricing"
   ],
   "rules": [

@@ -12,7 +12,14 @@ describe('Saved pricing rules', () => {
     expect(r.settings.defaultMarkupOther).toBe(2.85)
     expect(r.rules.find((x) => x.id === 'other')!.markup).toBe(2.85)
     expect(r.unconfirmed).not.toContain('defaultMarkupOther')
-    expect(r.version).toBe(2)
+    expect(r.version).toBe(3)
+  })
+
+  it('marks glass area, weight factor, negative other charges and the discount base as confirmed', () => {
+    const old = defaultRules()
+    old.version = 2
+    old.unconfirmed = ['rounding', 'glassAreaBasis', 'glassDensityKgPerSqmPerMm', 'warnNegativeOtherCharges', 'percentageBase', 'insuranceRate', 'warnBelowStandardPricing']
+    expect(migrateRules(old, defaultRules()).unconfirmed).toEqual(['rounding', 'warnBelowStandardPricing'])
   })
 
   it('keeps a markup the user changed themselves', () => {

@@ -180,8 +180,8 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             <Field label="Glazing spec"><TextInput value={item.glazingSpec} onChange={(v) => set('glazingSpec', v)} /></Field>
           </div>
           <div className="chips">
-            <span className="chip">Glass area: full item area</span><Unconfirmed />
-            <span className="chip">Weight factor: {fmtNum(rules.settings.glassDensityKgPerSqmPerMm)} kg/m²/mm</span><Unconfirmed />
+            <span className="chip">Glass area: full item area</span>{unconfirmed.has('glassAreaBasis') && <Unconfirmed />}
+            <span className="chip">Weight factor: {fmtNum(rules.settings.glassDensityKgPerSqmPerMm)} kg/m²/mm</span>{unconfirmed.has('glassDensityKgPerSqmPerMm') && <Unconfirmed />}
           </div>
           <Calc result={result} keys={['glassCost', 'glassWeight']} />
         </Card>
@@ -299,7 +299,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             )}
 
             <Calc result={result} keys={['subtotal', 'margin', 'discount', 'rate', 'amount', 'pricePerSqm']} />
-            <p className="muted small">Rounding: {rules.settings.rounding} on each component <Unconfirmed /></p>
+            <p className="muted small">Rounding: {rules.settings.rounding} on each component {unconfirmed.has('rounding') && <Unconfirmed />}</p>
           </div>
         </section>
       </aside>
