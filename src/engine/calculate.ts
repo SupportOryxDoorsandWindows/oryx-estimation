@@ -103,8 +103,8 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
     `${rLabel}(${fmtAed(base)} × ${fmtNum(input.dutiesPercent)}%)`,
   )
 
-  // Bonding, insurance and duties are not entered in the app any more; they appear only when a Zoho BOQ line carries them.
-  const parts = ['Profile price', 'glass', ...(bonding ? ['bonding'] : []), 'freight', 'other', 'accessories', 'installation', 'equipment',
+  // Insurance and duties are not entered in the app any more; they appear only when a Zoho BOQ line carries them.
+  const parts = ['Profile price', 'glass', 'bonding', 'freight', 'other', 'accessories', 'installation', 'equipment',
     ...(insurance ? ['insurance'] : []), ...(duties ? ['duties'] : [])]
   const subtotal = step('subtotal', 'Subtotal (AED)', base + insurance + duties, parts.join(' + '))
   const subtotalAfterMargin = step(

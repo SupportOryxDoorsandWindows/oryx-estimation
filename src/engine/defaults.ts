@@ -70,7 +70,6 @@ export function applyRuleDefaults(
     markup,
     freight,
     otherCharges: rule.otherCharges ?? item.otherCharges,
-    // Bonding is no longer entered in the app (removed 4 Nov 2026), so no default is applied;
-    // a bonding amount only comes in with Zoho BOQ lines.
+    // Bonding charges are entered as a plain amount; there is no automatic curtain-wall rate (4 Nov 2026).
   }
 }

@@ -151,6 +151,13 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
         <Card title="Other costs" id="sec-other">
           <div className="grid">
+            <Field label="Bonding charges (AED)">
+              {/* Older estimates may hold a per-m² bonding rate; editing turns it into a plain amount. */}
+              <NumberInput
+                value={item.bondingMode === 'perSqm' ? result.bonding : item.bondingAmount}
+                onChange={(v) => onChange({ ...item, bondingMode: 'amount', bondingAmount: v })}
+              />
+            </Field>
             <Field
               label="Freight (AED)"
               hint={rule.freight.type === 'perPanel' ? `Default: AED ${fmtAed(rule.freight.value)} per panel` : undefined}
@@ -192,9 +199,9 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               />
             </Field>
           </div>
-          {/* Bonding, insurance and duties are no longer entered here; they show only when a Zoho BOQ line carries them. */}
+          {/* Insurance and duties are no longer entered here; they show only when a Zoho BOQ line carries them. */}
           <Calc result={result} keys={[
-            ...(result.bonding ? ['bonding'] : []), 'freight', 'otherCharges', 'accessories', 'installation', 'equipment',
+            'bonding', 'freight', 'otherCharges', 'accessories', 'installation', 'equipment',
             ...(result.insurance ? ['insurance'] : []), ...(result.duties ? ['duties'] : []),
           ]} />
         </Card>
