@@ -76,7 +76,7 @@ These are editable defaults stored in `data/pricing-rules.json`.
 | OTIF | EUR × 4.32 | 2.22 (no glass line) | 5,000 | 0 |
 | Inotherm | EUR × (1 − 0.45) × 4.32 | 2.85 | 7,500 | 1,500 |
 | Kobbe | EUR × 4.32 | 2.85 | 20,000 | 0 |
-| Anything else | Manual cost | 2.5 | Manual | Manual |
+| Anything else | Manual cost | 2.85 | Manual | Manual |
 
 The exchange rates (GBP 5, EUR 4.32) and the Inotherm discount (45%) are settings.
 
@@ -85,7 +85,7 @@ The exchange rates (GBP 5, EUR 4.32) and the Inotherm discount (45%) are setting
 1. Bonding: AED 1,000/m² for curtain walls, or always manual?
 2. Is a negative "Other charges" a discount? Show a warning when other charges are below zero.
 3. Standard Pricing per m² (product list) and Glass Rate Reference: show them as reference values only, and warn when the calculated price per m² falls below Standard Pricing.
-4. Markup for products outside the pricing sheet: default 2.5. 190 products have a Standard Pricing of 0.
+4. Markup for products outside the pricing sheet: default 2.85 (confirmed by Production, 4 November 2026; was 2.5). 190 products have a Standard Pricing of 0.
 5. Base for insurance (1%), duties and discount %: default to the subtotal before discount.
 6. Rounding: floor or round (default floor).
 

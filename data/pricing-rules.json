@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "source": "SPEC.md §3 (PRICING-FORMULAS.xlsx) and §4 open rules",
   "settings": {
     "rounding": "floor",
@@ -10,7 +10,7 @@
     "bondingDefault": "curtainWallPerSqm",
     "glassAreaBasis": "full",
     "glassDensityKgPerSqmPerMm": 2.5,
-    "defaultMarkupOther": 2.5,
+    "defaultMarkupOther": 2.85,
     "insuranceRate": 0.01,
     "percentageBase": "subtotalBeforeDiscount",
     "warnNegativeOtherCharges": true,
@@ -22,7 +22,6 @@
     "bondingDefault",
     "glassAreaBasis",
     "glassDensityKgPerSqmPerMm",
-    "defaultMarkupOther",
     "insuranceRate",
     "percentageBase",
     "warnNegativeOtherCharges",
@@ -142,7 +141,7 @@
       "fabricator": "",
       "keywords": [],
       "costMethod": "manual",
-      "markup": 2.5,
+      "markup": 2.85,
       "freight": {
         "type": "manual",
         "value": 0

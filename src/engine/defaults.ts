@@ -13,7 +13,7 @@ export function blankLineItem(): LineItemInput {
     qty: 1,
     supplierPrice: 0,
     priceSource: 'entered',
-    markup: 2.5,
+    markup: 2.85,
     glassRate: 0,
     glassThicknessMm: 0,
     glazingSpec: '',

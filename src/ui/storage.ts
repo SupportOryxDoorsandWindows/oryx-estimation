@@ -47,7 +47,19 @@ export const defaultProducts = () => structuredClone(seedProducts.products) as P
 export const loadRules = (): PricingRules => {
   const seed = defaultRules()
   const saved = read<Partial<PricingRules>>(KEYS.rules, seed)
-  return { ...seed, ...saved, settings: { ...seed.settings, ...saved.settings }, doorChart: saved.doorChart ?? seed.doorChart }
+  return migrateRules({ ...seed, ...saved, settings: { ...seed.settings, ...saved.settings }, doorChart: saved.doorChart ?? seed.doorChart }, seed)
+}
+
+/** Brings rules saved under an older version up to date, keeping anything the user changed. */
+export function migrateRules(rules: PricingRules, seed: PricingRules): PricingRules {
+  if ((rules.version ?? 1) >= seed.version) return rules
+  const r = structuredClone(rules)
+  // v2: markup for products outside the pricing sheet 2.5 → 2.85, now confirmed.
+  if (r.settings.defaultMarkupOther === 2.5) r.settings.defaultMarkupOther = 2.85
+  const other = r.rules.find((x) => x.id === 'other')
+  if (other && other.markup === 2.5) other.markup = 2.85
+  r.unconfirmed = r.unconfirmed.filter((k) => k !== 'defaultMarkupOther')
+  return { ...r, version: seed.version }
 }
 export const saveRules = (r: PricingRules) => write(KEYS.rules, r)
 export const loadProducts = () => read<Product[]>(KEYS.products, defaultProducts())
