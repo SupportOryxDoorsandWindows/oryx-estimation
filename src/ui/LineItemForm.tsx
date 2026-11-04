@@ -216,6 +216,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               <NumberInput value={item.otherCharges} onChange={(v) => set('otherCharges', v)} />
             </Field>
             <Field label="Installation (AED)"><NumberInput value={item.installation} onChange={(v) => set('installation', v)} /></Field>
+            <Field label="Manpower charges (AED)"><NumberInput value={item.manpower} min={0} onChange={(v) => set('manpower', v)} /></Field>
             <Field label="Equipment rental (AED)"><NumberInput value={item.equipmentRental} onChange={(v) => set('equipmentRental', v)} /></Field>
           </div>
 
@@ -253,7 +254,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
           </div>
           {/* Insurance and duties are no longer entered here; they show only when a Zoho BOQ line carries them. */}
           <Calc result={result} keys={[
-            'bonding', 'freight', 'otherCharges', 'accessories', 'installation', 'equipment',
+            'bonding', 'freight', 'otherCharges', 'accessories', 'installation', 'manpower', 'equipment',
             ...(result.insurance ? ['insurance'] : []), ...(result.duties ? ['duties'] : []),
           ]} />
         </Card>

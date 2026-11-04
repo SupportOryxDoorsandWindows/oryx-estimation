@@ -90,10 +90,11 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
     input.accessories.length ? input.accessories.map((a) => `${a.description || 'Accessory'} ${fmtAed(a.cost)}`).join(' + ') : 'No accessories',
   )
   const installation = step('installation', 'Installation (AED)', rnd(input.installation), 'Entered amount')
+  const manpower = step('manpower', 'Manpower charges (AED)', rnd(input.manpower ?? 0), 'Entered amount')
   const equipmentRental = step('equipment', 'Equipment rental (AED)', rnd(input.equipmentRental), 'Entered amount')
 
   // SPEC §4.5: percentages use the subtotal before discount (excluding insurance and duties).
-  const base = profilePrice + glassCost + bonding + freight + otherCharges + accessories + installation + equipmentRental
+  const base = profilePrice + glassCost + bonding + freight + otherCharges + accessories + installation + manpower + equipmentRental
   const insurance = input.insuranceEnabled
     ? step('insurance', 'Insurance (AED)', rnd(base * s.insuranceRate),
         `${rLabel}(${fmtAed(base)} × ${fmtNum(s.insuranceRate * 100)}%)`)
@@ -104,7 +105,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
   )
 
   // Insurance and duties are not entered in the app any more; they appear only when a Zoho BOQ line carries them.
-  const parts = ['Profile price', 'glass', 'bonding', 'freight', 'other', 'accessories', 'installation', 'equipment',
+  const parts = ['Profile price', 'glass', 'bonding', 'freight', 'other', 'accessories', 'installation', 'manpower', 'equipment',
     ...(insurance ? ['insurance'] : []), ...(duties ? ['duties'] : [])]
   const subtotal = step('subtotal', 'Subtotal (AED)', base + insurance + duties, parts.join(' + '))
   const subtotalAfterMargin = step(
@@ -138,7 +139,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
 
   return {
     area, profileCost, profilePrice, glassCost, bonding, glassWeightKg, freight, otherCharges,
-    accessories, installation, equipmentRental, insurance, duties, subtotal, subtotalAfterMargin,
+    accessories, installation, manpower, equipmentRental, insurance, duties, subtotal, subtotalAfterMargin,
     discountAmount, discountPercent, rate, amount, pricePerSqm, steps, warnings,
   }
 }

@@ -95,6 +95,8 @@ export interface LineItemInput {
   freight: number
   otherCharges: number
   installation: number
+  /** Manpower charges, AED, entered by hand. */
+  manpower: number
   equipmentRental: number
   accessories: Accessory[]
   insuranceEnabled: boolean
@@ -125,6 +127,7 @@ export interface LineItemResult {
   otherCharges: number
   accessories: number
   installation: number
+  manpower: number
   equipmentRental: number
   insurance: number
   duties: number

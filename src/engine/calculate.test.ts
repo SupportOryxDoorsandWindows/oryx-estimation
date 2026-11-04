@@ -108,3 +108,15 @@ describe('Accessories (priced by hand)', () => {
     expect(r.warnings).toContain('Hafi Handle has no price. Enter it by hand (AED).')
   })
 })
+
+describe('Manpower charges', () => {
+  it('adds the entered amount to the subtotal, before margin change and discount', () => {
+    const base = { ...blankLineItem(), widthMm: 1000, heightMm: 2000, supplierPrice: 1000, markup: 2 }
+    const without = calculateLineItem(base, rules)
+    const withManpower = calculateLineItem({ ...base, manpower: 1500, marginChange: 1.1 }, rules)
+    expect(withManpower.manpower).toBe(1500)
+    expect(withManpower.subtotal).toBe(without.subtotal + 1500)
+    expect(withManpower.rate).toBe(Math.floor((without.subtotal + 1500) * 1.1))
+    expect(withManpower.steps.find((s) => s.key === 'subtotal')?.formula).toContain('manpower')
+  })
+})

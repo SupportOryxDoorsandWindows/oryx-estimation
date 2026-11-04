@@ -63,6 +63,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'Freight (AED)', key: 'freight', width: 11, get: (_e, i) => i.freight },
   { title: 'Other charges (AED)', key: 'otherCharges', width: 11, get: (_e, i) => i.otherCharges },
   { title: 'Installation (AED)', key: 'installation', width: 11, get: (_e, i) => i.installation },
+  { title: 'Manpower charges (AED)', key: 'manpower', width: 11, get: (_e, i) => i.manpower },
   { title: 'Equipment rental (AED)', key: 'equipmentRental', width: 11, get: (_e, i) => i.equipmentRental },
   { title: 'Insurance applied', key: 'insuranceEnabled', width: 9, get: (_e, i) => yesNo(i.insuranceEnabled) },
   { title: 'Duties (%)', key: 'dutiesPercent', width: 8, get: (_e, i) => i.dutiesPercent },
