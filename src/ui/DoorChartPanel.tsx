@@ -10,11 +10,13 @@ export const isDoorProduct = (p: Product | undefined) => !!p && /door/i.test(`${
 const nearest = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Math.round(v / 100) * 100))
 
 /** The door price chart inside a line item: this item's rate, a button to use it, and the SQM chart. */
-export function DoorChartPanel({ chart, widthMm, heightMm, inUse, onUse }: {
+export function DoorChartPanel({ chart, widthMm, heightMm, inUse, pricing, onUse }: {
   chart: DoorChart
   widthMm: number
   heightMm: number
   inUse: boolean
+  /** Pricing (AED/m²) typed over the reference, if any. */
+  pricing?: number | null
   onUse: () => void
 }) {
   const [open, setOpen] = useState(true)
@@ -53,7 +55,7 @@ export function DoorChartPanel({ chart, widthMm, heightMm, inUse, onUse }: {
         </div>
         <div className="door-panel-actions">
           {inUse
-            ? <span className="pill pill-green">Using the chart rate</span>
+            ? <span className="pill pill-green">{pricing ? `Using your Pricing: AED ${fmtAed(pricing)}/m²` : 'Using the chart rate'}</span>
             : <button type="button" className="btn btn-sm" disabled={!hasSize || !r.inRange} onClick={onUse}>Use this rate</button>}
           <button type="button" className="link" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide chart' : 'Show chart'}</button>
         </div>

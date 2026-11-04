@@ -27,7 +27,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
   if (door) {
     const markup = rules.doorChart.markupOnBase
     step(
-      'doorRate', 'Door chart rate (AED/m²)', door.rate,
+      'doorRate', 'Profile reference (AED/m²)', door.rate,
       door.inRange
         ? `${fmtNum(input.widthMm)} × ${fmtNum(input.heightMm)} mm between ${fmtNum(door.widthLow)}–${fmtNum(door.widthHigh)} W and ${fmtNum(door.heightLow)}–${fmtNum(door.heightHigh)} H` +
           ` (factors ${fmtNum(door.widthFactor)}, ${fmtNum(door.heightFactor)}): ${fmtNum(door.baseRate)}` +
@@ -36,9 +36,15 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
     )
     if (!door.inRange) warnings.push(`${fmtNum(input.widthMm)} × ${fmtNum(input.heightMm)} mm is outside the door price chart (W ${rules.doorChart.widths[0]}–${rules.doorChart.widths.at(-1)}, H ${rules.doorChart.heights[0]}–${rules.doorChart.heights.at(-1)} mm). Refer to Production.`)
   }
+  // The estimator's Pricing replaces the chart reference when entered; the reference stays on screen.
+  const doorPricing = door && input.doorPricing != null && input.doorPricing > 0
+    ? step('doorPricing', 'Pricing (AED/m²)', input.doorPricing,
+        door.inRange ? `Entered (profile reference ${fmtAed(Math.round(door.rate))})` : 'Entered (size outside the chart)')
+    : null
   if (door) {
-    profileCost = area * door.rate
-    costFormula = `${fmtNum(area)} m² × ${fmtNum(door.rate)} AED/m² (door chart)`
+    const rate = doorPricing ?? door.rate
+    profileCost = area * rate
+    costFormula = `${fmtNum(area)} m² × ${fmtNum(rate)} AED/m² (${doorPricing !== null ? 'pricing' : 'door chart'})`
   } else switch (rule.costMethod) {
     case 'aedPerSqm':
       profileCost = area * input.supplierPrice

@@ -85,6 +85,8 @@ export interface LineItemInput {
   supplierPrice: number
   /** 'doorChart': the AED/m² rate comes from the door price chart for this width and height. */
   priceSource: 'entered' | 'doorChart'
+  /** With the door chart: the estimator's Pricing (AED/m²) over the chart's Profile reference. null = use the reference. */
+  doorPricing: number | null
   markup: number
   glassRate: number
   glassThicknessMm: number

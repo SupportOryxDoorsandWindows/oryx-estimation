@@ -57,3 +57,27 @@ describe('Door price chart (Single Door Order Estimator)', () => {
     expect(r.warnings.join(' ')).toMatch(/outside the door price chart/)
   })
 })
+
+describe('Door chart: Profile reference and Pricing', () => {
+  const base = { ...blankLineItem(), ruleId: 'other', priceSource: 'doorChart' as const, widthMm: 1000, heightMm: 2000, markup: 2.85 }
+
+  it('prices from the profile reference until Pricing is entered', () => {
+    const r = calculateLineItem(base, rules)
+    expect(r.profileCost).toBeCloseTo(2 * 1653.4428571428573, 9)
+    expect(r.steps.find((s) => s.key === 'doorRate')?.label).toBe('Profile reference (AED/m²)')
+    expect(r.steps.find((s) => s.key === 'doorPricing')).toBeUndefined()
+  })
+
+  it('uses the entered Pricing and keeps the reference in the workings', () => {
+    const r = calculateLineItem({ ...base, doorPricing: 1800 }, rules)
+    expect(r.profileCost).toBe(2 * 1800)
+    expect(r.profilePrice).toBe(Math.floor(3600 * 2.85))
+    expect(r.steps.find((s) => s.key === 'doorRate')?.value).toBeCloseTo(1653.4428571428573, 9)
+    expect(r.steps.find((s) => s.key === 'doorPricing')).toMatchObject({ value: 1800, formula: 'Entered (profile reference 1,653)' })
+  })
+
+  it('ignores Pricing when the line is not on the door chart', () => {
+    const r = calculateLineItem({ ...base, priceSource: 'entered', supplierPrice: 5000, doorPricing: 1800 }, rules)
+    expect(r.profileCost).toBe(5000)
+  })
+})

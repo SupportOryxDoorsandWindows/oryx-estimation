@@ -85,6 +85,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
   const unconfirmed = new Set<string>(rules.unconfirmed)
   const stdWarning = product ? standardPricingWarning(result.pricePerSqm, product.standardPricing, rules) : null
   const warnings = [...result.warnings, ...(stdWarning ? [stdWarning] : [])]
+  const doorRef = result.steps.find((x) => x.key === 'doorRate')?.value ?? 0
   const spDiff = item.salespersonPrice ? item.salespersonPrice - result.rate : null
 
   const pickProduct = (id: string) => {
@@ -150,12 +151,20 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               </select>
             </Field>
             {item.priceSource === 'doorChart' ? (
-              <Field
-                label="Door chart rate (AED/m²)"
-                hint={rule.costMethod !== 'aedPerSqm' ? `Used instead of the ${rule.label} ${rule.costMethod === 'gbp' ? 'GBP' : rule.costMethod === 'manual' ? 'lump-sum' : 'EUR'} price` : 'Follows the width and height'}
-              >
-                <input type="text" disabled value={result.steps.find((s) => s.key === 'doorRate')?.value ? fmtAed(Math.round(result.steps.find((s) => s.key === 'doorRate')!.value)) : 'Size outside chart'} />
-              </Field>
+              <>
+                <Field
+                  label="Profile reference (AED/m²)"
+                  hint={rule.costMethod !== 'aedPerSqm' ? `From the door price chart, instead of the ${rule.label} ${rule.costMethod === 'gbp' ? 'GBP' : rule.costMethod === 'manual' ? 'lump-sum' : 'EUR'} price` : 'From the door price chart; follows the width and height'}
+                >
+                  <input type="text" disabled value={doorRef ? fmtAed(Math.round(doorRef)) : 'Size outside chart'} />
+                </Field>
+                <Field label="Pricing (AED/m²)" hint={item.doorPricing != null ? 'Entered by hand; it no longer follows the size.' : 'Starts at the profile reference. Type to change it.'}>
+                  <NumberInput value={item.doorPricing ?? Math.round(doorRef)} min={0} group onChange={(v) => set('doorPricing', v || null)} />
+                  {item.doorPricing != null && (
+                    <button type="button" className="link small" onClick={() => set('doorPricing', null)}>Reset to reference</button>
+                  )}
+                </Field>
+              </>
             ) : (
               <Field label={supplierLabel[rule.costMethod]}>
                 <NumberInput value={item.supplierPrice} onChange={(v) => set('supplierPrice', v)} />
@@ -170,13 +179,14 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             </Field>
             <Field label="Margin change"><NumberInput value={item.marginChange} onChange={(v) => set('marginChange', v)} /></Field>
           </div>
-          <Calc result={result} keys={['doorRate', 'profileCost', 'profilePrice']} />
+          <Calc result={result} keys={['doorRate', 'doorPricing', 'profileCost', 'profilePrice']} />
           {isDoorProduct(product) && (
             <DoorChartPanel
               chart={rules.doorChart}
               widthMm={item.widthMm}
               heightMm={item.heightMm}
               inUse={item.priceSource === 'doorChart'}
+              pricing={item.doorPricing}
               onUse={() => set('priceSource', 'doorChart')}
             />
           )}
