@@ -6,6 +6,7 @@ import type { Accessory, CostMethod, LineItemInput, LineItemResult, PricingRules
 import { Card, Field, NumberInput, TextInput, Unconfirmed } from './fields'
 import { Icon } from './icons'
 import accessoriesJson from '../../data/accessories.json'
+import { DoorChartPanel, isDoorProduct } from './DoorChartPanel'
 import { ProductPicker } from './ProductPicker'
 import type { Role } from './storage'
 
@@ -25,7 +26,8 @@ function Calc({ result, keys }: { result: LineItemResult; keys: string[] }) {
         <div className="calc-row" role="row" key={s.key}>
           <span className="calc-label" role="rowheader">{s.label}</span>
           <span className="calc-formula" role="cell">{s.formula}</span>
-          <span className="calc-value" role="cell">{s.key === 'area' ? fmtNum(s.value) : fmtAed(s.value)}</span>
+          {/* The door chart rate is a per-m² rate with decimals: show it rounded, as on the Door price chart page. */}
+          <span className="calc-value" role="cell">{s.key === 'area' ? fmtNum(s.value) : fmtAed(s.key === 'doorRate' ? Math.round(s.value) : s.value)}</span>
         </div>
       ))}
     </div>
@@ -169,6 +171,15 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             <Field label="Margin change"><NumberInput value={item.marginChange} onChange={(v) => set('marginChange', v)} /></Field>
           </div>
           <Calc result={result} keys={['doorRate', 'profileCost', 'profilePrice']} />
+          {isDoorProduct(product) && (
+            <DoorChartPanel
+              chart={rules.doorChart}
+              widthMm={item.widthMm}
+              heightMm={item.heightMm}
+              inUse={item.priceSource === 'doorChart'}
+              onUse={() => set('priceSource', 'doorChart')}
+            />
+          )}
         </Card>
 
         <Card title="Glass" id="sec-glass">

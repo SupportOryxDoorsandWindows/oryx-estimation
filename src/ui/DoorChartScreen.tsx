@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { chartSizes, doorRate } from '../engine/doorChart'
+import { doorRate } from '../engine/doorChart'
 import { fmtAed, fmtNum } from '../engine/format'
 import type { DoorChart } from '../engine/types'
+import { DoorChartTable } from './DoorChartTable'
 import { Card, Field, NumberInput } from './fields'
 import type { Role } from './storage'
 
@@ -16,9 +17,6 @@ export function DoorChartScreen({ chart, onChange, role }: Props) {
   const [height, setHeight] = useState(2750)
   const r = doorRate(width, height, chart)
   const area = (width * height) / 1_000_000
-  const sizes = chartSizes(chart)
-  const costedW = new Set(chart.widths)
-  const costedH = new Set(chart.heights)
   const canEdit = role === 'manager'
   const minW = chart.widths[0], maxW = chart.widths.at(-1)!, minH = chart.heights[0], maxH = chart.heights.at(-1)!
   const setRate = (hi: number, wi: number, v: number) =>
@@ -69,26 +67,7 @@ export function DoorChartScreen({ chart, onChange, role }: Props) {
 
       <Card title="SQM price chart (AED/m²)" aside="Shaded rows and columns are costed sizes; others are interpolated. Click a value to look it up.">
         <div className="table-wrap">
-          <table className="table door-chart">
-            <thead>
-              <tr><th>H \ W (mm)</th>{sizes.widths.map((w) => <th key={w} className={`num ${costedW.has(w) ? 'costed' : ''}`}>{fmtNum(w)}</th>)}</tr>
-            </thead>
-            <tbody>
-              {sizes.heights.map((h) => (
-                <tr key={h}>
-                  <th className={costedH.has(h) ? 'costed' : ''}>{fmtNum(h)}</th>
-                  {sizes.widths.map((w) => {
-                    const on = w === width && h === height
-                    return (
-                      <td key={w} className={`num ${costedW.has(w) || costedH.has(h) ? 'costed' : ''} ${on ? 'on' : ''}`}>
-                        <button type="button" className="cell-btn" onClick={() => { setWidth(w); setHeight(h) }}>{fmtAed(Math.round(doorRate(w, h, chart).rate))}</button>
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DoorChartTable chart={chart} highlight={{ widthMm: width, heightMm: height }} onPick={(w, h) => { setWidth(w); setHeight(h) }} />
         </div>
       </Card>
 
