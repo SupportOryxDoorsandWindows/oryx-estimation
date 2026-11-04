@@ -36,7 +36,7 @@ export const PROPOSAL_FIELDS: ProposalField[] = [
   { key: 'projectName', label: 'Project Name', group: 'deal', type: 'text' },
 
   { key: 'proposalOwner', label: 'Proposal Owner', group: 'proposal', type: 'text', required: true, suggestions: ['Business Support'] },
-  { key: 'priority', label: 'Priority', group: 'proposal', type: 'select', required: true, options: ['High', 'Medium', 'Low'] },
+  { key: 'priority', label: 'Priority', group: 'proposal', type: 'select', required: true, options: ['', 'High', 'Medium', 'Low'] },
   { key: 'expectedCompletionDate', label: 'Expected Date of Completion', group: 'proposal', type: 'date', required: true },
   { key: 'quoteStatus', label: 'Quote Status', group: 'proposal', type: 'text', required: true, suggestions: ['Not Started', 'Accepted by the Client'] },
   { key: 'proposalDate', label: 'Proposal Date', group: 'proposal', type: 'date', required: true },
@@ -45,14 +45,12 @@ export const PROPOSAL_FIELDS: ProposalField[] = [
 
 export type ProposalDetails = Record<string, string | number | boolean>
 
-const today = () => new Date().toISOString().slice(0, 10)
-
-/** Zoho's defaults for a new proposal. */
+/** A new proposal: every field empty, for the estimator to fill in. */
 export function blankProposal(): ProposalDetails {
   const d: ProposalDetails = {}
   for (const f of PROPOSAL_FIELDS) d[f.key] = f.type === 'checkbox' ? false : f.type === 'number' ? 0 : ''
   // crmDealId and crmFilled are not form fields: the linked Zoho CRM deal, and which fields came from Zoho.
-  return { ...d, proposalOwner: 'Business Support', priority: 'High', quoteStatus: 'Not Started', expectedCompletionDate: today(), proposalDate: today(), crmDealId: '', crmFilled: '' }
+  return { ...d, crmDealId: '', crmFilled: '' }
 }
 
 /** Labels of required fields that are still empty. */

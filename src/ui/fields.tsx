@@ -43,7 +43,8 @@ export function NumberInput({ value, onChange, step = 'any', disabled, min, suff
       ref.current.select()
     }
   })
-  const shown = draft ?? (Number.isFinite(value) ? (group ? grouped.format(value) : String(value)) : '')
+  // 0 shows as an empty field, so a new estimate starts clear; it still counts as 0.
+  const shown = draft ?? (Number.isFinite(value) && value !== 0 ? (group ? grouped.format(value) : String(value)) : '')
   const clamp = (n: number) => (min !== undefined ? Math.max(min, n) : n)
   const delta = step === 'any' ? 1 : Number(step)
 
@@ -60,7 +61,7 @@ export function NumberInput({ value, onChange, step = 'any', disabled, min, suff
       inputMode={min !== undefined && min >= 0 ? 'decimal' : 'text'}
       disabled={disabled}
       value={shown}
-      onFocus={(e) => { selectAll.current = true; setDraft(Number.isFinite(value) ? String(value) : ''); e.target.select() }}
+      onFocus={(e) => { selectAll.current = true; setDraft(Number.isFinite(value) && value !== 0 ? String(value) : ''); e.target.select() }}
       onMouseUp={(e) => e.preventDefault()}
       onBlur={() => setDraft(null)}
       onChange={(e) => {

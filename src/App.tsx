@@ -213,7 +213,8 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
                 </div>
               </header>
 
-              <ProposalDetailsCard details={current.details} onChange={(details) => setCurrent({ ...current, details })} />
+              {/* Keyed by estimate, so New estimate also clears the lookups' search text and lists. */}
+              <ProposalDetailsCard key={current.id} details={current.details} onChange={(details) => setCurrent({ ...current, details })} />
 
               <Card title="Line items" aside={`${current.items.length} ${current.items.length === 1 ? 'item' : 'items'} · Total AED ${fmtAed(total)}`}>
                 <div className="table-wrap">
@@ -271,7 +272,7 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
                 </button>
               </Card>
 
-              <LineItemForm item={item} onChange={updateItem} rules={rules} products={products} role={role} />
+              <LineItemForm key={`${current.id}-${itemIndex}`} item={item} onChange={updateItem} rules={rules} products={products} role={role} />
             </>
           )}
 
