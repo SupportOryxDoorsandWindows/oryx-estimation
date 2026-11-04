@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { calculateLineItem, standardPricingWarning } from '../engine/calculate'
 import { applyRuleDefaults, matchRule } from '../engine/defaults'
 import { fmtAed, fmtNum } from '../engine/format'
-import type { Accessory, CostMethod, LineItemInput, LineItemResult, PricingRules, Product } from '../engine/types'
+import { GLASS_TYPES, type Accessory, type CostMethod, type GlassType, type LineItemInput, type LineItemResult, type PricingRules, type Product } from '../engine/types'
 import { Card, Field, NumberInput, TextInput, Unconfirmed } from './fields'
 import { Icon } from './icons'
 import accessoriesJson from '../../data/accessories.json'
@@ -194,6 +194,12 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
         <Card title="Glass" id="sec-glass">
           <div className="grid">
+            <Field label="Glass type">
+              <select value={item.glassType ?? ''} onChange={(e) => set('glassType', e.target.value as GlassType)}>
+                <option value="">Select glass type</option>
+                {GLASS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </Field>
             <Field label="Glass rate (AED/m²)" hint={!rule.glassLine ? `No glass line for ${rule.label}` : undefined}>
               <NumberInput value={item.glassRate} disabled={!rule.glassLine} onChange={(v) => set('glassRate', v)} />
             </Field>

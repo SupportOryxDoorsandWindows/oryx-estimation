@@ -2,7 +2,7 @@
 // Pure functions: the Excel libraries only read and write the rows (see src/ui/excelFile.ts).
 import { calculateLineItem } from '../engine/calculate'
 import { blankLineItem, matchRule } from '../engine/defaults'
-import type { LineItemInput, PricingRule, PricingRules, Product, Settings } from '../engine/types'
+import { GLASS_TYPES, type GlassType, type LineItemInput, type PricingRule, type PricingRules, type Product, type Settings } from '../engine/types'
 import { blankProposal, PROPOSAL_FIELDS, type ProposalDetails } from '../ui/proposal'
 import type { Estimate } from '../ui/storage'
 
@@ -57,6 +57,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'Margin change', key: 'marginChange', width: 9, get: (_e, i) => i.marginChange },
   { title: 'Glass rate (AED/m²)', key: 'glassRate', width: 11, get: (_e, i) => i.glassRate },
   { title: 'Glass thickness (mm)', key: 'glassThicknessMm', width: 11, get: (_e, i) => i.glassThicknessMm },
+  { title: 'Glass type', key: 'glassType', width: 10, get: (_e, i) => i.glassType ?? '' },
   { title: 'Glazing spec', key: 'glazingSpec', width: 16, get: (_e, i) => i.glazingSpec },
   { title: 'Bonding mode', key: 'bondingMode', width: 11, get: (_e, i) => (i.bondingMode === 'perSqm' ? 'Per m²' : 'Amount') },
   { title: 'Bonding rate (AED/m²)', key: 'bondingRate', width: 11, get: (_e, i) => i.bondingRate },
@@ -215,6 +216,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
           case 'zohoAmount': if (str(v) !== '') item.zohoAmount = num(v); break
           case 'priceSource': item.priceSource = /door/i.test(str(v)) ? 'doorChart' : 'entered'; break
           case 'doorPricing': item.doorPricing = str(v) === '' ? null : num(v) || null; break
+          case 'glassType': item.glassType = (GLASS_TYPES as readonly string[]).find((t) => t.toLowerCase() === str(v).toLowerCase()) as GlassType ?? ''; break
           case 'ref': case 'location': case 'remarks': case 'productId': case 'ruleId': case 'glazingSpec':
             item[col.key] = str(v); break
           default: (item as unknown as Record<string, number>)[col.key] = num(v)

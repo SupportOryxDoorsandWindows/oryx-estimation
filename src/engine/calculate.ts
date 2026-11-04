@@ -75,7 +75,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
 
   const glassCost = rule.glassLine
     ? step('glassCost', 'Glass cost (AED)', rnd(area * input.glassRate),
-        `${rLabel}(${fmtNum(area)} m² × ${fmtNum(input.glassRate)} AED/m²)`)
+        `${input.glassType ? `${input.glassType} glass: ` : ''}${rLabel}(${fmtNum(area)} m² × ${fmtNum(input.glassRate)} AED/m²)`)
     : step('glassCost', 'Glass cost (AED)', 0, `No glass line for ${rule.label}`)
 
   const glassWeightKg = step(

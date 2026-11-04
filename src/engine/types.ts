@@ -71,6 +71,9 @@ export interface Accessory {
   cost: number
 }
 
+export const GLASS_TYPES = ['Standard', 'Special', 'Jumbo'] as const
+export type GlassType = (typeof GLASS_TYPES)[number] | ''
+
 export interface LineItemInput {
   productId: string
   ruleId: string
@@ -91,6 +94,8 @@ export interface LineItemInput {
   glassRate: number
   glassThicknessMm: number
   glazingSpec: string
+  /** Standard, Special or Jumbo; '' until chosen. Does not change the price yet. */
+  glassType: GlassType
   bondingMode: 'perSqm' | 'amount'
   bondingRate: number
   bondingAmount: number

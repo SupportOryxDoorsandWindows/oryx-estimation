@@ -127,3 +127,11 @@ describe('Zoho BOQ_Summary import', () => {
     expect(calculateLineItem(origin, rules).rate).toBe(9855) // calculated rate stays independent of the salesperson price
   })
 })
+
+describe('Glass type', () => {
+  it('goes through the Excel export and import', async () => {
+    const est = { ...cw011, items: [{ ...cw011.items[0], glassType: 'Jumbo' as const }] }
+    const { estimates } = parseWorkbook(await roundTrip(buildWorkbook([est], rules, products)), rules)
+    expect(estimates![0].items[0].glassType).toBe('Jumbo')
+  })
+})
