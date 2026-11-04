@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { calculateLineItem, standardPricingWarning } from '../engine/calculate'
 import { applyRuleDefaults, matchRule } from '../engine/defaults'
 import { fmtAed, fmtNum } from '../engine/format'
-import type { CostMethod, LineItemInput, LineItemResult, PricingRules, Product } from '../engine/types'
+import type { Accessory, CostMethod, LineItemInput, LineItemResult, PricingRules, Product } from '../engine/types'
 import { Card, Field, NumberInput, TextInput, Unconfirmed } from './fields'
 import { Icon } from './icons'
+import accessoriesJson from '../../data/accessories.json'
 import { ProductPicker } from './ProductPicker'
 import type { Role } from './storage'
 
@@ -26,6 +28,41 @@ function Calc({ result, keys }: { result: LineItemResult; keys: string[] }) {
           <span className="calc-value" role="cell">{s.key === 'area' ? fmtNum(s.value) : fmtAed(s.value)}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+const ACCESSORIES: string[] = accessoriesJson.items
+const OTHER = '__other__'
+
+/** One accessory: pick from the standard list (or Other) and type its price. */
+function AccessoryRow({ accessory, onChange, onRemove }: {
+  accessory: Accessory; onChange: (a: Accessory) => void; onRemove: () => void
+}) {
+  const known = ACCESSORIES.includes(accessory.description)
+  const [other, setOther] = useState(!known && accessory.description !== '')
+  return (
+    <div className="acc-row">
+      <div className="acc-name">
+        <select
+          aria-label="Accessory"
+          value={other ? OTHER : known ? accessory.description : ''}
+          onChange={(e) => {
+            const v = e.target.value
+            setOther(v === OTHER)
+            onChange({ ...accessory, description: v === OTHER ? '' : v })
+          }}
+        >
+          <option value="">Select accessory</option>
+          {ACCESSORIES.map((n) => <option key={n} value={n}>{n}</option>)}
+          <option value={OTHER}>Other (type it)</option>
+        </select>
+        {other && <TextInput value={accessory.description} placeholder="Accessory name" onChange={(v) => onChange({ ...accessory, description: v })} />}
+      </div>
+      <div className={accessory.cost ? '' : 'acc-missing'}>
+        <NumberInput value={accessory.cost} min={0} group onChange={(v) => onChange({ ...accessory, cost: v })} />
+      </div>
+      <button type="button" className="btn btn-sm" onClick={onRemove}>Remove</button>
     </div>
   )
 }
@@ -173,12 +210,16 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
 
           <h3>Accessories</h3>
           {item.accessories.length === 0 && <p className="muted">No accessories added.</p>}
+          {item.accessories.length > 0 && (
+            <div className="acc-row acc-head"><span className="field-label">Accessory</span><span className="field-label">Price (AED)</span><span /></div>
+          )}
           {item.accessories.map((a, i) => (
-            <div className="acc-row" key={i}>
-              <TextInput value={a.description} placeholder="Description" onChange={(v) => set('accessories', item.accessories.map((x, j) => (j === i ? { ...x, description: v } : x)))} />
-              <NumberInput value={a.cost} onChange={(v) => set('accessories', item.accessories.map((x, j) => (j === i ? { ...x, cost: v } : x)))} />
-              <button type="button" className="btn btn-sm" onClick={() => set('accessories', item.accessories.filter((_, j) => j !== i))}>Remove</button>
-            </div>
+            <AccessoryRow
+              key={i}
+              accessory={a}
+              onChange={(next) => set('accessories', item.accessories.map((x, j) => (j === i ? next : x)))}
+              onRemove={() => set('accessories', item.accessories.filter((_, j) => j !== i))}
+            />
           ))}
           <button type="button" className="btn btn-sm" onClick={() => set('accessories', [...item.accessories, { description: '', cost: 0 }])}>
             <Icon name="plus" size={16} /> Add accessory

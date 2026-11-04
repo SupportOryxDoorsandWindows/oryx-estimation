@@ -87,7 +87,7 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
   const otherCharges = step('otherCharges', 'Other charges (AED)', rnd(input.otherCharges), 'Entered amount')
   const accessories = step(
     'accessories', 'Accessories (AED)', rnd(input.accessories.reduce((t, a) => t + (a.cost || 0), 0)),
-    input.accessories.length ? input.accessories.map((a) => fmtAed(a.cost)).join(' + ') : 'No accessories',
+    input.accessories.length ? input.accessories.map((a) => `${a.description || 'Accessory'} ${fmtAed(a.cost)}`).join(' + ') : 'No accessories',
   )
   const installation = step('installation', 'Installation (AED)', rnd(input.installation), 'Entered amount')
   const equipmentRental = step('equipment', 'Equipment rental (AED)', rnd(input.equipmentRental), 'Entered amount')
@@ -129,6 +129,10 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
   const pricePerSqm = step('pricePerSqm', 'Price per m² (AED)', area ? rnd(rate / area) : 0,
     area ? `${rLabel}(${fmtAed(rate)} ÷ ${fmtNum(area)} m²)` : 'No area')
 
+  // Accessories have no set prices: each one must be priced by hand.
+  for (const a of input.accessories) {
+    if (!a.cost) warnings.push(`${a.description || 'An accessory'} has no price. Enter it by hand (AED).`)
+  }
   if (s.warnNegativeOtherCharges && otherCharges < 0)
     warnings.push(`Other charges are negative (AED ${fmtAed(otherCharges)}). Confirm whether this is a discount.`)
 

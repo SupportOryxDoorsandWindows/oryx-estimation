@@ -332,3 +332,7 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .nav-signout:hover { color: #fff; }
 .nav-user-email { font-size: 13px; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .zoho-tag { font-size: 11px; padding: 2px 6px; background: var(--tint); color: var(--blue); }
+.acc-row { align-items: start; }
+.acc-head { margin-bottom: -6px; }
+.acc-name { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.acc-missing input { border-color: var(--amber); background: var(--amber-bg); }

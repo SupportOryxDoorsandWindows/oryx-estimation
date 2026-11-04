@@ -92,3 +92,19 @@ describe('engine rules', () => {
     expect(r.insurance).toBe(Math.floor(50225 * 0.01))
   })
 })
+
+describe('Accessories (priced by hand)', () => {
+  const base = { ...blankLineItem(), widthMm: 1000, heightMm: 2000, supplierPrice: 1000 }
+
+  it('adds each accessory price and names it in the workings', () => {
+    const r = calculateLineItem({ ...base, accessories: [{ description: 'Bar Handle', cost: 350 }, { description: 'Smart Lock', cost: 1200 }] }, rules)
+    expect(r.accessories).toBe(1550)
+    expect(r.steps.find((s) => s.key === 'accessories')?.formula).toBe('Bar Handle 350 + Smart Lock 1,200')
+    expect(r.warnings.join(' ')).not.toMatch(/no price/)
+  })
+
+  it('warns when an accessory has no price yet', () => {
+    const r = calculateLineItem({ ...base, accessories: [{ description: 'Hafi Handle', cost: 0 }] }, rules)
+    expect(r.warnings).toContain('Hafi Handle has no price. Enter it by hand (AED).')
+  })
+})
