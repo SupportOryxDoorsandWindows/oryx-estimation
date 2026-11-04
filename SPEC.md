@@ -96,6 +96,8 @@ The exchange rates (GBP 5, EUR 4.32) and the Inotherm discount (45%) are setting
 
 **Added, 4 November 2026 (Production):** Dual colour tick box: `dual_colour = profile_price × 10%` (setting `dualColourSurcharge`), added to the subtotal after the profile price. Glass and other costs are not affected.
 
+**Added, 4 November 2026 (Production):** Glass type sets the glass rate (AED/m²), which the estimator can still change: Standard 450, Special 800, Jumbo 950, Super Jumbo 2,000 (setting `glassTypeRates`).
+
 **Confirmed by Production, 4 November 2026:** glass area = full item area; glass weight factor 2.5 kg/m²/mm; a negative Other charges value is allowed (the app still shows a warning); discount % is taken on the subtotal before discount (§4.5). Still unconfirmed: rounding (§4.6) and the Standard Pricing warning (§4.3).
 
 ## 5. Out of scope

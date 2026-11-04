@@ -85,6 +85,9 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
   const unconfirmed = new Set<string>(rules.unconfirmed)
   const stdWarning = product ? standardPricingWarning(result.pricePerSqm, product.standardPricing, rules) : null
   const warnings = [...result.warnings, ...(stdWarning ? [stdWarning] : [])]
+  const typeRate = item.glassType ? rules.settings.glassTypeRates?.[item.glassType] : undefined
+  const glassHint = typeRate === undefined ? undefined
+    : item.glassRate === typeRate ? `${item.glassType} rate` : `Changed from the ${item.glassType} rate of ${fmtAed(typeRate)}`
   const doorRef = result.steps.find((x) => x.key === 'doorRate')?.value ?? 0
   const spDiff = item.salespersonPrice ? item.salespersonPrice - result.rate : null
 
@@ -194,13 +197,17 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
         <Card title="Glass" id="sec-glass">
           <div className="grid">
             <Field label="Glass type">
-              <select value={item.glassType ?? ''} onChange={(e) => set('glassType', e.target.value as GlassType)}>
+              <select value={item.glassType ?? ''} onChange={(e) => {
+                const t = e.target.value as GlassType
+                const rate = t ? rules.settings.glassTypeRates?.[t] : undefined
+                onChange({ ...item, glassType: t, ...(rate !== undefined ? { glassRate: rate } : {}) })
+              }}>
                 <option value="">Select glass type</option>
-                {GLASS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                {GLASS_TYPES.map((t) => <option key={t} value={t}>{t}{rules.settings.glassTypeRates?.[t] ? ` (AED ${fmtAed(rules.settings.glassTypeRates[t])}/m²)` : ''}</option>)}
               </select>
             </Field>
-            <Field label="Glass rate (AED/m²)" hint={!rule.glassLine ? `No glass line for ${rule.label}` : undefined}>
-              <NumberInput value={item.glassRate} disabled={!rule.glassLine} onChange={(v) => set('glassRate', v)} />
+            <Field label="Glass rate (AED/m²)" hint={!rule.glassLine ? `No glass line for ${rule.label}` : glassHint}>
+              <NumberInput value={item.glassRate} disabled={!rule.glassLine} group onChange={(v) => set('glassRate', v)} />
             </Field>
             <Field label="Glass thickness (mm)"><NumberInput value={item.glassThicknessMm} onChange={(v) => set('glassThicknessMm', v)} /></Field>
             <Field label="Glazing spec"><TextInput value={item.glazingSpec} onChange={(v) => set('glazingSpec', v)} /></Field>

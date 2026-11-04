@@ -94,6 +94,7 @@ const CALC_COLS: { title: string; get: (r: ReturnType<typeof calculateLineItem>)
 const SETTING_LABELS: Record<keyof Settings, string> = {
   rounding: 'Rounding (floor or round)',
   dualColourSurcharge: 'Dual colour surcharge on profile price (0–1)',
+  glassTypeRates: 'Glass rates by type (AED/m²)',
   gbpToAed: 'GBP to AED',
   eurToAed: 'EUR to AED',
   inothermDiscount: 'Inotherm discount (0–1)',
@@ -124,7 +125,10 @@ export function buildWorkbook(estimates: Estimate[], rules: PricingRules, produc
   const settings: Cell[][] = [['Key', 'Setting', 'Value', 'Unconfirmed']]
   for (const key of Object.keys(SETTING_LABELS) as (keyof Settings)[]) {
     const v = s[key]
-    settings.push([key, SETTING_LABELS[key], typeof v === 'boolean' ? yesNo(v) : v, yesNo(unconfirmed.has(key))])
+    const cell: Cell = typeof v === 'boolean' ? yesNo(v)
+      : typeof v === 'object' ? Object.entries(v).map(([k, n]) => `${k} ${n}`).join('; ') // e.g. "Standard 450; Special 800"
+      : v
+    settings.push([key, SETTING_LABELS[key], cell, yesNo(unconfirmed.has(key))])
   }
 
   const ruleRows: Cell[][] = [['ID', 'Origin', 'Business Unit', 'Keywords', 'Cost method', 'Markup', 'Freight basis', 'Freight (AED)', 'Other default (AED)', 'Glass line']]
@@ -257,7 +261,10 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
       const key = str(row['Key'])
       if (!(key in current.settings)) continue
       const before = current.settings[key as keyof Settings]
-      settings[key] = typeof before === 'boolean' ? bool(row['Value']) : typeof before === 'number' ? num(row['Value']) : str(row['Value']) || before
+      settings[key] = typeof before === 'boolean' ? bool(row['Value'])
+        : typeof before === 'number' ? num(row['Value'])
+        : typeof before === 'object' ? { ...before, ...Object.fromEntries(str(row['Value']).split(';').map((p) => p.trim().match(/^(.*\S)\s+(-?[\d.,]+)$/)).filter((m): m is RegExpMatchArray => !!m).map((m) => [m[1], num(m[2])])) }
+        : str(row['Value']) || before
       if (bool(row['Unconfirmed'])) unconfirmed.push(key)
     }
     const rules: PricingRule[] = ruleRows.length

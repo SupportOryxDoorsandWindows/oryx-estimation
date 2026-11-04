@@ -17,6 +17,8 @@ export interface Settings {
   warnBelowStandardPricing: boolean
   /** Added to the profile price when a line item is dual colour (0.1 = 10%). */
   dualColourSurcharge: number
+  /** Glass rate (AED/m²) filled in when a glass type is chosen; the estimator can change it. */
+  glassTypeRates: Record<string, number>
 }
 
 export interface PricingRule {
@@ -73,7 +75,7 @@ export interface Accessory {
   cost: number
 }
 
-export const GLASS_TYPES = ['Standard', 'Special', 'Jumbo'] as const
+export const GLASS_TYPES = ['Standard', 'Special', 'Jumbo', 'Super Jumbo'] as const
 export type GlassType = (typeof GLASS_TYPES)[number] | ''
 
 export interface LineItemInput {
@@ -96,7 +98,7 @@ export interface LineItemInput {
   glassRate: number
   glassThicknessMm: number
   glazingSpec: string
-  /** Standard, Special or Jumbo; '' until chosen. Does not change the price yet. */
+  /** Standard, Special, Jumbo or Super Jumbo; '' until chosen. Choosing one fills in its glass rate. */
   glassType: GlassType
   /** Dual colour frames: adds the dual colour surcharge (10%) to the profile price. */
   dualColour: boolean

@@ -1,4 +1,4 @@
-import type { PricingRule, PricingRules, Settings } from '../engine/types'
+import { GLASS_TYPES, type PricingRule, type PricingRules, type Settings } from '../engine/types'
 import { Card, Field, NumberInput, TextInput } from './fields'
 
 interface Props {
@@ -53,6 +53,16 @@ export function SettingsScreen({ rules, onChange }: Props) {
         <p className="muted small">
           Glass area uses the full item area. Insurance, duties and discount % use the subtotal before discount. Both are unconfirmed (SPEC §4).
         </p>
+      </Card>
+
+      <Card title="Glass rates by type (AED/m²)" aside="Filled in when a glass type is chosen; estimators can change them per item">
+        <div className="grid grid-4">
+          {GLASS_TYPES.map((t) => (
+            <Field key={t} label={t}>
+              <NumberInput value={s.glassTypeRates?.[t] ?? 0} min={0} group onChange={(v) => setS('glassTypeRates', { ...s.glassTypeRates, [t]: v })} />
+            </Field>
+          ))}
+        </div>
       </Card>
 
       <Card title="Pricing rules by origin" aside="SPEC §3">

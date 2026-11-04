@@ -15,7 +15,13 @@
     "percentageBase": "subtotalBeforeDiscount",
     "warnNegativeOtherCharges": true,
     "warnBelowStandardPricing": true,
-    "dualColourSurcharge": 0.1
+    "dualColourSurcharge": 0.1,
+    "glassTypeRates": {
+      "Standard": 450,
+      "Special": 800,
+      "Jumbo": 950,
+      "Super Jumbo": 2000
+    }
   },
   "unconfirmed": [
     "rounding",
