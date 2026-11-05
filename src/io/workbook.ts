@@ -72,6 +72,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'Installation (AED)', key: 'installation', width: 11, get: (_e, i) => i.installation },
   { title: 'Manpower charges (AED)', key: 'manpower', width: 11, get: (_e, i) => i.manpower },
   { title: 'Equipment rental (AED)', key: 'equipmentRental', width: 11, get: (_e, i) => i.equipmentRental },
+  { title: 'Other costs comments', key: 'costComments', width: 30, get: (_e, i) => i.costComments ?? '' },
   { title: 'Insurance applied', key: 'insuranceEnabled', width: 9, get: (_e, i) => yesNo(i.insuranceEnabled) },
   { title: 'Duties (%)', key: 'dutiesPercent', width: 8, get: (_e, i) => i.dutiesPercent },
   { title: 'Discount mode', key: 'discountMode', width: 10, get: (_e, i) => (i.discountMode === 'percent' ? 'Percent' : 'Amount') },
@@ -228,7 +229,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
           case 'priceSource': item.priceSource = /door/i.test(str(v)) ? 'doorChart' : 'entered'; break
           case 'doorPricing': item.doorPricing = str(v) === '' ? null : num(v) || null; break
           case 'glassType': item.glassType = (GLASS_TYPES as readonly string[]).find((t) => t.toLowerCase() === str(v).toLowerCase()) as GlassType ?? ''; break
-          case 'ref': case 'location': case 'remarks': case 'productId': case 'ruleId': case 'glazingSpec':
+          case 'ref': case 'location': case 'remarks': case 'productId': case 'ruleId': case 'glazingSpec': case 'costComments':
             item[col.key] = str(v); break
           default: (item as unknown as Record<string, number>)[col.key] = num(v)
         }

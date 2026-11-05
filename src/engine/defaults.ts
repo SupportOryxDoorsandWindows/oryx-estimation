@@ -28,6 +28,7 @@ export function blankLineItem(): LineItemInput {
     installation: 0,
     manpower: 0,
     equipmentRental: 0,
+    costComments: '',
     accessories: [],
     insuranceEnabled: false,
     dutiesPercent: 0,

@@ -41,7 +41,7 @@ const cw011: Estimate = {
       productId: '4543538000018465002', ruleId: 'fusion-a', ref: 'CW01.1', location: 'Ground floor',
       widthMm: 4789, heightMm: 3366, panels: 8, qty: 1, supplierPrice: 800, markup: 2.5,
       glassRate: 450, glassThicknessMm: 16, bondingMode: 'amount', bondingAmount: 16120, otherCharges: -5387,
-      salespersonPrice: 48000,
+      salespersonPrice: 48000, costComments: 'Bonding by the glazing team; crane for 2 days',
     },
     {
       ...blankLineItem(), ref: 'W02', priceSource: 'doorChart', widthMm: 1000, heightMm: 1500, supplierPrice: 3000, insuranceEnabled: true,

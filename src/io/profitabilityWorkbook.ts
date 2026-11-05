@@ -72,24 +72,24 @@ export function buildProfitabilityWorkbook(x: ProfitabilityExport): SheetRows[] 
 
   const lineRows: Cell[][] = [[
     'Ref #', 'Location', 'Product', 'Qty', 'Markup', 'Selling price (AED)',
-    ...COST_CATEGORIES.map((c) => `${c.label} (AED)`), 'Total estimated cost (AED)', 'Estimated profit (AED)', 'Profit margin',
+    ...COST_CATEGORIES.map((c) => `${c.label} (AED)`), 'Total estimated cost (AED)', 'Estimated profit (AED)', 'Profit margin', 'Comments',
   ]]
   x.items.forEach((item, i) => {
     const one: Profitability = projectProfitability([item], [results[i]])
     lineRows.push([
       item.ref || `Item ${i + 1}`, item.location || '', x.products.find((pr) => pr.id === item.productId)?.name ?? '',
-      item.qty, item.markup, one.sellingPrice, ...COST_CATEGORIES.map((c) => one.costs[c.key]), one.totalCost, one.profit, marginLabel(one.marginPercent),
+      item.qty, item.markup, one.sellingPrice, ...COST_CATEGORIES.map((c) => one.costs[c.key]), one.totalCost, one.profit, marginLabel(one.marginPercent), item.costComments ?? '',
     ])
   })
   lineRows.push([
-    'Total', '', '', null, markupLabel(p.markups), p.sellingPrice, ...COST_CATEGORIES.map((c) => p.costs[c.key]), p.totalCost, p.profit, marginLabel(p.marginPercent),
+    'Total', '', '', null, markupLabel(p.markups), p.sellingPrice, ...COST_CATEGORIES.map((c) => p.costs[c.key]), p.totalCost, p.profit, marginLabel(p.marginPercent), '',
   ])
 
   return [
     { sheet: 'Profitability summary', data: rows, widths: [34, 18, 62], formats: [undefined, AED, undefined], boldRows: bold },
     {
       sheet: 'By line item', data: lineRows,
-      widths: [12, 18, 36, 6, 8, 16, ...COST_CATEGORIES.map(() => 15), 16, 16, 12],
+      widths: [12, 18, 36, 6, 8, 16, ...COST_CATEGORIES.map(() => 15), 16, 16, 12, 40],
       formats: [undefined, undefined, undefined, undefined, undefined, AED, ...COST_CATEGORIES.map(() => AED), AED, AED, undefined],
       boldRows: [lineRows.length - 1],
     },

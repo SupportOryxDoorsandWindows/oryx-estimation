@@ -248,6 +248,9 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             <Field label="Manpower charges (AED)"><NumberInput value={item.manpower} min={0} onChange={(v) => set('manpower', v)} /></Field>
             <Field label="Equipment rental (AED)"><NumberInput value={item.equipmentRental} onChange={(v) => set('equipmentRental', v)} /></Field>
           </div>
+          <Field label="Comments" hint="Notes on these costs, e.g. what the charges cover. Not used in the calculation.">
+            <textarea value={item.costComments ?? ''} rows={3} onChange={(e) => set('costComments', e.target.value)} />
+          </Field>
 
           <h3>Accessories</h3>
           {item.accessories.length === 0 && <p className="muted">No accessories added.</p>}

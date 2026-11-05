@@ -111,6 +111,8 @@ export interface LineItemInput {
   /** Manpower charges, AED, entered by hand. */
   manpower: number
   equipmentRental: number
+  /** Notes on the other costs (free text, e.g. what the charges cover). Not used in any calculation. */
+  costComments: string
   accessories: Accessory[]
   insuranceEnabled: boolean
   dutiesPercent: number
