@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { calculateLineItem } from './engine/calculate'
+import { projectProfitability } from './engine/profitability'
 import { blankLineItem } from './engine/defaults'
 import { fmtAed } from './engine/format'
 import type { LineItemInput, PricingRules, Product } from './engine/types'
 import { buildWorkbook, parseProducts, parseWorkbook } from './io/workbook'
+import { buildProfitabilityWorkbook, projectNameOf } from './io/profitabilityWorkbook'
 import { downloadWorkbook, pickWorkbook } from './ui/excelFile'
 import type { SignedInUser } from './auth/supabase'
 import { Card } from './ui/fields'
 import { Icon, type IconName } from './ui/icons'
 import { LineItemForm } from './ui/LineItemForm'
 import { ProposalDetailsCard } from './ui/ProposalDetailsCard'
+import { ProfitabilitySummary } from './ui/ProfitabilitySummary'
 import { missingRequired } from './ui/proposal'
 import { createRevision, revisionOf } from './ui/revision'
 import { DoorChartScreen } from './ui/DoorChartScreen'
@@ -64,6 +67,8 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
   const item = current.items[itemIndex] ?? current.items[0]
   const results = current.items.map((i) => calculateLineItem(i, rules))
   const total = results.reduce((t, r) => t + r.amount, 0)
+  // Worked out from the same results as the Line items table, so it follows every change at once.
+  const profitability = projectProfitability(current.items, results)
   const hasZoho = current.items.some((i) => i.zohoAmount != null)
 
   const go = (v: View) => { setView(v); setMenuOpen(false) }
@@ -104,6 +109,20 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
   const exportAll = async () => {
     try {
       await downloadWorkbook(`oryx-estimation-${new Date().toISOString().slice(0, 10)}.xlsx`, buildWorkbook(estimates, rules, products))
+    } catch (err) {
+      notify(`Export failed: ${(err as Error).message}`, 'error')
+    }
+  }
+
+  const exportProfitability = async () => {
+    const safe = (s: string) => s.replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60)
+    const proposal = String(current.details.proposalNumber ?? '').trim()
+    const name = safe(proposal || projectNameOf(current.name, current.details)) || 'estimate'
+    try {
+      await downloadWorkbook(`profitability-${name}-${new Date().toISOString().slice(0, 10)}.xlsx`, buildProfitabilityWorkbook({
+        name: current.name, details: current.details, items: current.items, rules, products,
+        exportedOn: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      }))
     } catch (err) {
       notify(`Export failed: ${(err as Error).message}`, 'error')
     }
@@ -274,6 +293,8 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
               </Card>
 
               <LineItemForm key={`${current.id}-${itemIndex}`} item={item} onChange={updateItem} rules={rules} products={products} role={role} />
+
+              <ProfitabilitySummary p={profitability} onExport={exportProfitability} />
             </>
           )}
 

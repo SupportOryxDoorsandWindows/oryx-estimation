@@ -103,3 +103,17 @@ The exchange rates (GBP 5, EUR 4.32) and the Inotherm discount (45%) are setting
 ## 5. Out of scope
 
 BOQ comparison, reading elevation drawings, counting windows from drawings, and the Zoho integration.
+
+
+## 6. Project Profitability Summary (5 November 2026)
+
+Estimated profitability of the whole estimate, shown at the bottom of the Estimate screen and exported to Excel. It reuses the line-item results above; nothing is calculated twice.
+
+| Figure | Formula (all line items, × qty, whole AED) |
+|---|---|
+| Selling price | Sum of line amounts (after markup, dual colour, margin change and discount). The salesperson price is never used. |
+| Total estimated cost | Profile cost before markup + glass + installation + manpower + equipment rental + accessories + other additional charges (bonding, freight, positive other charges, insurance, duties) |
+| Estimated profit | Selling price − total estimated cost |
+| Profit margin | Estimated profit ÷ selling price × 100; "—" when the selling price is 0 |
+
+Markup on profile, dual colour and margin change are what Oryx earns, not costs. Discounts reduce the selling price. Negative other charges (e.g. CW01.1's −5,387) reduce the client price and are not counted as income or cost. Price build-up: total cost + markup on profile + dual colour + margin change − discounts − negative other charges = selling price.

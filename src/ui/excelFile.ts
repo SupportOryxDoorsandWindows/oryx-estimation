@@ -7,7 +7,12 @@ export async function downloadWorkbook(fileName: string, sheets: SheetRows[]) {
   await writeXlsxFile(
     sheets.map((s) => ({
       sheet: s.sheet,
-      data: s.data.map((row, r) => row.map((value) => (value === null ? null : r === 0 ? { value, fontWeight: 'bold' as const } : value))),
+      data: s.data.map((row, r) => row.map((value, c) => {
+        if (value === null) return null
+        const bold = r === 0 || !!s.boldRows?.includes(r)
+        const format = typeof value === 'number' ? s.formats?.[c] : undefined
+        return bold || format ? { value, ...(bold ? { fontWeight: 'bold' as const } : {}), ...(format ? { format } : {}) } : value
+      })),
       columns: s.widths?.map((width) => ({ width })),
       stickyRowsCount: 1,
     })),

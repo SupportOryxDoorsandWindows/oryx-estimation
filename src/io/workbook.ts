@@ -11,6 +11,10 @@ export interface SheetRows {
   sheet: string
   data: Cell[][]
   widths?: number[]
+  /** Excel number format per column, e.g. '#,##0' (used for number cells only). */
+  formats?: (string | undefined)[]
+  /** Rows (by index) written in bold, besides the first row. */
+  boldRows?: number[]
 }
 /** What a reader hands back: any cell value, including dates. */
 export interface ReadSheet {
