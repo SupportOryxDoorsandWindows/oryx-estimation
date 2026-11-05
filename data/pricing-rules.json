@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "source": "SPEC.md §3 (PRICING-FORMULAS.xlsx) and §4 open rules",
   "settings": {
     "rounding": "floor",
@@ -21,11 +21,13 @@
       "Special": 800,
       "Jumbo": 950,
       "Super Jumbo": 2000
-    }
+    },
+    "manpowerRate": 0.2
   },
   "unconfirmed": [
     "rounding",
-    "warnBelowStandardPricing"
+    "warnBelowStandardPricing",
+    "manpowerRate"
   ],
   "rules": [
     {

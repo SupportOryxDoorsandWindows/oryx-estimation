@@ -68,6 +68,10 @@ export function migrateRules(rules: PricingRules, seed: PricingRules): PricingRu
     const gone = ['glassAreaBasis', 'glassDensityKgPerSqmPerMm', 'warnNegativeOtherCharges', 'percentageBase', 'curtainWallBondingRate', 'bondingDefault', 'insuranceRate']
     r.unconfirmed = r.unconfirmed.filter((k) => !gone.includes(k))
   }
+  if (from < 4) {
+    // v4: manpower charges default to 20% of the profile cost (Production, 5 Nov 2026), not yet confirmed.
+    if (!r.unconfirmed.includes('manpowerRate')) r.unconfirmed = [...r.unconfirmed, 'manpowerRate']
+  }
   return { ...r, version: seed.version }
 }
 export const saveRules = (r: PricingRules) => write(KEYS.rules, r)
@@ -84,7 +88,12 @@ export function newEstimate(): Estimate {
 }
 
 /** Fills fields missing from older saved items so the engine always gets a full input. */
-export const normaliseItem = (i: Partial<LineItemInput>): LineItemInput => ({ ...blankLineItem(), ...i })
+export const normaliseItem = (i: Partial<LineItemInput>): LineItemInput => ({
+  ...blankLineItem(),
+  // Items saved before the 20% manpower default keep the manpower that was typed in (often none).
+  ...(i.manpowerManual === undefined ? { manpowerManual: true } : {}),
+  ...i,
+})
 
 /** Fills fields missing from older saved estimates (before proposal details existed). */
 export const normaliseEstimate = (e: Estimate): Estimate => ({

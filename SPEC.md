@@ -117,3 +117,11 @@ Estimated profitability of the whole estimate, shown at the bottom of the Estima
 | Profit margin | Estimated profit ÷ selling price × 100; "—" when the selling price is 0 |
 
 Markup on profile, dual colour and margin change are what Oryx earns, not costs. Discounts reduce the selling price. Negative other charges (e.g. CW01.1's −5,387) reduce the client price and are not counted as income or cost. Price build-up: total cost + markup on profile + dual colour + margin change − discounts − negative other charges = selling price.
+
+## 7. Manpower charges default (5 November 2026, **SETTING**, unconfirmed)
+
+```
+manpower = floor(profile_cost × manpower_rate)     # manpower_rate = 0.20 (Settings), profile cost before markup
+```
+
+Filled in automatically on new line items; the estimator can type another amount ("Reset to 20%" restores it). Production's working assumption, shown with an "Unconfirmed" badge until confirmed. Line items saved before this change, Zoho BOQ lines and Excel files without the "Manpower entered by hand" column keep the manpower that was typed in (often 0), so CW01.1 and imported Zoho proposals still match.

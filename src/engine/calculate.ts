@@ -100,7 +100,11 @@ export function calculateLineItem(input: LineItemInput, rules: PricingRules): Li
     input.accessories.length ? input.accessories.map((a) => `${a.description || 'Accessory'} ${fmtAed(a.cost)}`).join(' + ') : 'No accessories',
   )
   const installation = step('installation', 'Installation (AED)', rnd(input.installation), 'Entered amount')
-  const manpower = step('manpower', 'Manpower charges (AED)', rnd(input.manpower ?? 0), 'Entered amount')
+  const manpowerRate = s.manpowerRate ?? 0.2
+  const manpower = input.manpowerManual
+    ? step('manpower', 'Manpower charges (AED)', rnd(input.manpower ?? 0), 'Entered amount')
+    : step('manpower', 'Manpower charges (AED)', rnd(profileCost * manpowerRate),
+        `${rLabel}(${fmtNum(profileCost)} profile cost × ${fmtNum(manpowerRate * 100)}%)`)
   const equipmentRental = step('equipment', 'Equipment rental (AED)', rnd(input.equipmentRental), 'Entered amount')
 
   // SPEC §4.5: percentages use the subtotal before discount (excluding insurance and duties).

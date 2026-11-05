@@ -12,6 +12,7 @@ const numericSettings: { key: keyof Settings; label: string }[] = [
   { key: 'inothermDiscount', label: 'Inotherm discount (0–1)' },
   { key: 'glassDensityKgPerSqmPerMm', label: 'Glass weight factor (kg/m²/mm)' },
   { key: 'dualColourSurcharge', label: 'Dual colour surcharge on profile price (0–1)' },
+  { key: 'manpowerRate', label: 'Manpower charges as a share of profile cost (0–1)' },
   { key: 'defaultMarkupOther', label: 'Markup for products outside the pricing sheet' },
 ]
 

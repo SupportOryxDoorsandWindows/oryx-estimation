@@ -245,7 +245,21 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
               <NumberInput value={item.otherCharges} onChange={(v) => set('otherCharges', v)} />
             </Field>
             <Field label="Installation (AED)"><NumberInput value={item.installation} onChange={(v) => set('installation', v)} /></Field>
-            <Field label="Manpower charges (AED)"><NumberInput value={item.manpower} min={0} onChange={(v) => set('manpower', v)} /></Field>
+            <Field
+              label="Manpower charges (AED)"
+              badge={unconfirmed.has('manpowerRate')}
+              hint={item.manpowerManual
+                ? 'Entered by hand.'
+                : `${fmtNum((rules.settings.manpowerRate ?? 0.2) * 100)}% of the profile cost (AED ${fmtAed(Math.round(result.profileCost))}). Type to change it.`}
+            >
+              <NumberInput value={item.manpowerManual ? item.manpower : result.manpower} min={0}
+                onChange={(v) => onChange({ ...item, manpowerManual: true, manpower: v })} />
+              {item.manpowerManual && (
+                <button type="button" className="link small" onClick={() => onChange({ ...item, manpowerManual: false, manpower: 0 })}>
+                  Reset to {fmtNum((rules.settings.manpowerRate ?? 0.2) * 100)}% of profile cost
+                </button>
+              )}
+            </Field>
             <Field label="Equipment rental (AED)"><NumberInput value={item.equipmentRental} onChange={(v) => set('equipmentRental', v)} /></Field>
           </div>
           <Field label="Comments" hint="Notes on these costs, e.g. what the charges cover. Not used in the calculation.">

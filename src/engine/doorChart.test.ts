@@ -45,7 +45,7 @@ describe('Door price chart (Single Door Order Estimator)', () => {
   })
 
   it('feeds the estimate as the AED/m² supplier price', () => {
-    const item = { ...blankLineItem(), ruleId: 'fusion-a', priceSource: 'doorChart' as const, widthMm: 1000, heightMm: 2000, markup: 2.5, supplierPrice: 1 }
+    const item = { ...blankLineItem(), manpowerManual: true, ruleId: 'fusion-a', priceSource: 'doorChart' as const, widthMm: 1000, heightMm: 2000, markup: 2.5, supplierPrice: 1 }
     const r = calculateLineItem(item, rules)
     expect(r.profileCost).toBeCloseTo(2 * 1653.4428571428573, 9) // Order Estimator line 1: unit price 3,306.89
     expect(r.profilePrice).toBe(Math.floor(2 * 1653.4428571428573 * 2.5))
@@ -53,14 +53,14 @@ describe('Door price chart (Single Door Order Estimator)', () => {
   })
 
   it('warns and prices the profile at 0 when the size is out of range', () => {
-    const r = calculateLineItem({ ...blankLineItem(), priceSource: 'doorChart', widthMm: 1500, heightMm: 2000 }, rules)
+    const r = calculateLineItem({ ...blankLineItem(), manpowerManual: true, priceSource: 'doorChart', widthMm: 1500, heightMm: 2000 }, rules)
     expect(r.profileCost).toBe(0)
     expect(r.warnings.join(' ')).toMatch(/outside the door price chart/)
   })
 })
 
 describe('Door chart: Profile reference and Pricing', () => {
-  const base = { ...blankLineItem(), ruleId: 'other', priceSource: 'doorChart' as const, widthMm: 1000, heightMm: 2000, markup: 2.85 }
+  const base = { ...blankLineItem(), manpowerManual: true, ruleId: 'other', priceSource: 'doorChart' as const, widthMm: 1000, heightMm: 2000, markup: 2.85 }
 
   it('prices from the profile reference until Pricing is entered', () => {
     const r = calculateLineItem(base, rules)
@@ -87,7 +87,7 @@ describe('Door products use the door chart automatically', () => {
   const products = (productsJson as { products: Product[] }).products
   const pick = (code: string) => {
     const p = products.find((x) => x.oryxCode === code)!
-    return applyRuleDefaults({ ...blankLineItem(), productId: p.id }, matchRule(p, rules), rules, p)
+    return applyRuleDefaults({ ...blankLineItem(), manpowerManual: true, productId: p.id }, matchRule(p, rules), rules, p)
   }
 
   it('switches an AED-priced door to the door chart', () => {

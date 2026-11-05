@@ -9,7 +9,7 @@ const rules = rulesJson as PricingRules
 // Proposal P268194R3, item CW01.1 (SPEC.md §2 golden test).
 function cw011(): LineItemInput {
   return {
-    ...blankLineItem(),
+    ...blankLineItem(), manpowerManual: true,
     productId: '4543538000018465002', // Insulux · Fusion · C35 Reinforced
     ruleId: 'fusion-a',
     ref: 'CW01.1',
@@ -54,6 +54,16 @@ describe('CW01.1 golden test', () => {
 })
 
 describe('engine rules', () => {
+  it('fills manpower with 20% of the profile cost unless typed in', () => {
+    const auto = { ...blankLineItem(), ruleId: 'fusion-a', widthMm: 4789, heightMm: 3366, supplierPrice: 800, markup: 2.5 }
+    const r = calculateLineItem(auto, rules)
+    expect(r.manpower).toBe(Math.floor(16.119774 * 800 * 0.2)) // 2,579
+    expect(r.steps.find((s) => s.key === 'manpower')!.formula).toContain('20%')
+    expect(calculateLineItem({ ...auto, manpowerManual: true, manpower: 1000 }, rules).manpower).toBe(1000)
+    const half = { ...rules, settings: { ...rules.settings, manpowerRate: 0.1 } }
+    expect(calculateLineItem(auto, half).manpower).toBe(Math.floor(16.119774 * 800 * 0.1))
+  })
+
   it('a new line item starts with 32 mm glass', () => {
     expect(blankLineItem().glassThicknessMm).toBe(32)
   })
@@ -98,7 +108,7 @@ describe('engine rules', () => {
 })
 
 describe('Accessories (priced by hand)', () => {
-  const base = { ...blankLineItem(), widthMm: 1000, heightMm: 2000, supplierPrice: 1000 }
+  const base = { ...blankLineItem(), manpowerManual: true, widthMm: 1000, heightMm: 2000, supplierPrice: 1000 }
 
   it('adds each accessory price and names it in the workings', () => {
     const r = calculateLineItem({ ...base, accessories: [{ description: 'Bar Handle', cost: 350 }, { description: 'Smart Lock', cost: 1200 }] }, rules)
@@ -115,7 +125,7 @@ describe('Accessories (priced by hand)', () => {
 
 describe('Manpower charges', () => {
   it('adds the entered amount to the subtotal, before margin change and discount', () => {
-    const base = { ...blankLineItem(), widthMm: 1000, heightMm: 2000, supplierPrice: 1000, markup: 2 }
+    const base = { ...blankLineItem(), manpowerManual: true, widthMm: 1000, heightMm: 2000, supplierPrice: 1000, markup: 2 }
     const without = calculateLineItem(base, rules)
     const withManpower = calculateLineItem({ ...base, manpower: 1500, marginChange: 1.1 }, rules)
     expect(withManpower.manpower).toBe(1500)

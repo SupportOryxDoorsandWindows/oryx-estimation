@@ -8,7 +8,7 @@ import { buildProfitabilityWorkbook } from './profitabilityWorkbook'
 
 const rules = rulesJson as PricingRules
 const item = (over: Partial<LineItemInput> = {}): LineItemInput => ({
-  ...blankLineItem(), ruleId: 'fusion-a', ref: 'CW01.1', widthMm: 4789, heightMm: 3366, panels: 8, qty: 1,
+  ...blankLineItem(), manpowerManual: true, ruleId: 'fusion-a', ref: 'CW01.1', widthMm: 4789, heightMm: 3366, panels: 8, qty: 1,
   supplierPrice: 800, markup: 2.5, glassRate: 450, bondingMode: 'amount', bondingAmount: 16120, otherCharges: -5387, ...over,
 })
 

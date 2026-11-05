@@ -28,7 +28,7 @@ describe('PRICING-FORMULAS.xlsx examples', () => {
   for (const ex of examples) {
     it(`${ex.name} = floor(${ex.excel})`, () => {
       const rule = rules.rules.find((r) => r.id === ex.rule)!
-      const base = { ...blankLineItem(), widthMm: ex.w, heightMm: ex.h, panels: ex.panels, supplierPrice: ex.price, glassRate: ex.glass }
+      const base = { ...blankLineItem(), manpowerManual: true, widthMm: ex.w, heightMm: ex.h, panels: ex.panels, supplierPrice: ex.price, glassRate: ex.glass }
       const item = { ...applyRuleDefaults(base, rule, rules, undefined), bondingMode: 'amount' as const, bondingAmount: 0 }
       expect(calculateLineItem(item, rules).rate).toBe(Math.floor(ex.excel))
     })

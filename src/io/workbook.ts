@@ -71,6 +71,7 @@ const INPUT_COLS: (Col & { key?: keyof LineItemInput })[] = [
   { title: 'Other charges (AED)', key: 'otherCharges', width: 11, get: (_e, i) => i.otherCharges },
   { title: 'Installation (AED)', key: 'installation', width: 11, get: (_e, i) => i.installation },
   { title: 'Manpower charges (AED)', key: 'manpower', width: 11, get: (_e, i) => i.manpower },
+  { title: 'Manpower entered by hand', key: 'manpowerManual', width: 10, get: (_e, i) => yesNo(i.manpowerManual) },
   { title: 'Equipment rental (AED)', key: 'equipmentRental', width: 11, get: (_e, i) => i.equipmentRental },
   { title: 'Other costs comments', key: 'costComments', width: 30, get: (_e, i) => i.costComments ?? '' },
   { title: 'Insurance applied', key: 'insuranceEnabled', width: 9, get: (_e, i) => yesNo(i.insuranceEnabled) },
@@ -112,6 +113,7 @@ const SETTING_LABELS: Record<keyof Settings, string> = {
   percentageBase: 'Base for percentages',
   warnNegativeOtherCharges: 'Warn when other charges are negative',
   warnBelowStandardPricing: 'Warn below Standard Pricing',
+  manpowerRate: 'Manpower charges as a share of profile cost (0–1)',
 }
 
 export function buildWorkbook(estimates: Estimate[], rules: PricingRules, products: Product[]): SheetRows[] {
@@ -215,7 +217,8 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
         byId.set(id, est)
       }
       const itemNo = num(row['Item #']) || est.items.length + 1
-      const item: LineItemInput = { ...blankLineItem() }
+      // Files exported before the manpower default have no 'Manpower entered by hand' column: keep their typed amount.
+      const item: LineItemInput = { ...blankLineItem(), manpowerManual: true }
       for (const col of INPUT_COLS) {
         if (!col.key || !(col.title in row)) continue
         const v = row[col.title]
@@ -224,6 +227,7 @@ export function parseWorkbook(sheets: ReadSheet[], current: PricingRules, produc
           case 'discountMode': item.discountMode = /percent|%/i.test(str(v)) ? 'percent' : 'amount'; break
           case 'insuranceEnabled': item.insuranceEnabled = bool(v); break
           case 'dualColour': item.dualColour = bool(v); break
+          case 'manpowerManual': item.manpowerManual = bool(v); break
           case 'salespersonPrice': item.salespersonPrice = str(v) === '' ? null : num(v) || null; break
           case 'zohoAmount': if (str(v) !== '') item.zohoAmount = num(v); break
           case 'priceSource': item.priceSource = /door/i.test(str(v)) ? 'doorChart' : 'entered'; break
@@ -429,6 +433,8 @@ export function boqRowToItem(row: Record<string, unknown>, rules: PricingRules, 
     const sp = num(row["Salesperson's Item Pricing (AED)"])
     const item: LineItemInput = {
       ...blankLineItem(),
+      // Zoho BOQ lines carry no manpower; keep it at 0 so imported lines still match Zoho.
+      manpowerManual: true,
       productId: product?.id ?? '',
       ruleId,
       ref,

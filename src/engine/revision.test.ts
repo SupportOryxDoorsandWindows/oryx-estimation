@@ -11,7 +11,7 @@ import type { PricingRules } from './types'
 const rules = rulesJson as PricingRules
 
 // Two accepted lines, priced as in a BOQ: a Fusion F44 window (6,865 each) and a fixed AED 3,000 item.
-const f44 = { ...blankLineItem(), ruleId: 'fusion-a', ref: '1', widthMm: 1600, heightMm: 1900, qty: 3, supplierPrice: 600, markup: 3, glassRate: 400, otherCharges: 177 }
+const f44 = { ...blankLineItem(), manpowerManual: true, ruleId: 'fusion-a', ref: '1', widthMm: 1600, heightMm: 1900, qty: 3, supplierPrice: 600, markup: 3, glassRate: 400, otherCharges: 177 }
 const accepted = (): RevisionLine[] => {
   const rate = calculateLineItem(f44, rules).rate
   return [

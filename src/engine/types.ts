@@ -19,6 +19,8 @@ export interface Settings {
   dualColourSurcharge: number
   /** Glass rate (AED/m²) filled in when a glass type is chosen; the estimator can change it. */
   glassTypeRates: Record<string, number>
+  /** Manpower charges filled in as this share of the profile cost (0.2 = 20%); the estimator can type another amount. */
+  manpowerRate: number
 }
 
 export interface PricingRule {
@@ -108,8 +110,10 @@ export interface LineItemInput {
   freight: number
   otherCharges: number
   installation: number
-  /** Manpower charges, AED, entered by hand. */
+  /** Manpower charges, AED, when entered by hand (manpowerManual). */
   manpower: number
+  /** false: manpower = profile cost × the manpower rate (Settings). true: the amount typed in `manpower`. */
+  manpowerManual: boolean
   equipmentRental: number
   /** Notes on the other costs (free text, e.g. what the charges cover). Not used in any calculation. */
   costComments: string

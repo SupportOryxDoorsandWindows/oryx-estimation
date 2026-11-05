@@ -9,7 +9,7 @@ const r3: Estimate = {
   name: 'P000456R3 – OC00000 Test deal',
   createdAt: '2026-10-30T09:00:00.000Z',
   updatedAt: '2026-10-30T09:00:00.000Z',
-  items: [{ ...blankLineItem(), ref: 'W1', widthMm: 1000, accessories: [{ description: 'Handle', cost: 100 }] }],
+  items: [{ ...blankLineItem(), manpowerManual: true, ref: 'W1', widthMm: 1000, accessories: [{ description: 'Handle', cost: 100 }] }],
   details: { ...blankProposal(), dealName: 'Test deal', proposalReference: 'P000456R3', revisionNumber: 3, address: 'Dubai' },
 }
 

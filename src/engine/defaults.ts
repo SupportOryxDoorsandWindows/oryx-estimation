@@ -27,6 +27,7 @@ export function blankLineItem(): LineItemInput {
     otherCharges: 0,
     installation: 0,
     manpower: 0,
+    manpowerManual: false,
     equipmentRental: 0,
     costComments: '',
     accessories: [],
