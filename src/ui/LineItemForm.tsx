@@ -8,7 +8,11 @@ import { Icon } from './icons'
 import accessoriesJson from '../../data/accessories.json'
 import { DoorChartPanel, isDoorProduct } from './DoorChartPanel'
 import { ProductPicker } from './ProductPicker'
+import { ItemProfitability } from './ProfitabilitySummary'
+import { projectProfitability } from '../engine/profitability'
 import type { Role } from './storage'
+
+let lastSummaryTab: 'summary' | 'profit' = 'summary'
 
 const supplierLabel: Record<CostMethod, string> = {
   aedPerSqm: 'Supplier price (AED/m²)',
@@ -82,6 +86,9 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
   const product = products.find((p) => p.id === item.productId)
   const rule = rules.rules.find((r) => r.id === item.ruleId) ?? rules.rules[rules.rules.length - 1]
   const result = calculateLineItem(item, rules)
+  // The chosen tab stays when moving between line items (the form remounts per item).
+  const [summaryTab, setTab] = useState<'summary' | 'profit'>(() => lastSummaryTab)
+  const setSummaryTab = (t: 'summary' | 'profit') => { lastSummaryTab = t; setTab(t) }
   const unconfirmed = new Set<string>(rules.unconfirmed)
   const stdWarning = product ? standardPricingWarning(result.pricePerSqm, product.standardPricing, rules) : null
   const warnings = [...result.warnings, ...(stdWarning ? [stdWarning] : [])]
@@ -285,9 +292,18 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
       <aside className="col-side">
         <section className="card summary" aria-labelledby="sec-summary">
           <div className="card-head">
-            <h2 id="sec-summary">Summary</h2>
-            <span className="card-aside">{item.ref || 'Unnamed item'}</span>
+            <h2 id="sec-summary">{summaryTab === 'summary' ? 'Summary' : 'Profitability'}</h2>
+            <div className="summary-tabs" role="tablist" aria-label="Line item summary">
+              <button type="button" role="tab" className="summary-tab" aria-selected={summaryTab === 'summary'} onClick={() => setSummaryTab('summary')}>Summary</button>
+              <button type="button" role="tab" className="summary-tab" aria-selected={summaryTab === 'profit'} onClick={() => setSummaryTab('profit')}>Profitability</button>
+            </div>
+            <span className="summary-item-name">{item.ref || 'Unnamed item'}</span>
           </div>
+          {summaryTab === 'profit' ? (
+            <div className="card-body">
+              <ItemProfitability p={projectProfitability([item], [result])} qty={item.qty} />
+            </div>
+          ) : (
           <div className="card-body">
             <div className="figure">
               <span className="figure-label">Calculated rate (AED)</span>
@@ -335,6 +351,7 @@ export function LineItemForm({ item, onChange, rules, products, role }: Props) {
             <Calc result={result} keys={['subtotal', 'margin', 'discount', 'rate', 'amount', 'pricePerSqm']} />
             <p className="muted small">Rounding: {rules.settings.rounding} on each component {unconfirmed.has('rounding') && <Unconfirmed />}</p>
           </div>
+          )}
         </section>
       </aside>
     </div>

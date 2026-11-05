@@ -100,3 +100,64 @@ function FragmentRows({ label, value, sub }: { label: string; value: number; sub
     </>
   )
 }
+
+/**
+ * The same figures for ONE line item (all its quantity), for the "Profitability" tab of the
+ * line item Summary. Uses projectProfitability() with just this item, so an item's figures
+ * add up to the project's.
+ */
+export function ItemProfitability({ p, qty }: { p: Profitability; qty: number }) {
+  const tone = p.marginPercent === null ? '' : p.profit < 0 ? 'neg' : 'pos'
+  const signed = (v: number) => (v < 0 ? `−${fmtAed(-v)}` : fmtAed(v))
+  const rows = COST_CATEGORIES.filter((c) => p.costs[c.key] !== 0)
+  return (
+    <div className="item-profit">
+      <div className="figure">
+        <span className="figure-label">Selling price (AED)</span>
+        <span className="figure-value">{fmtAed(p.sellingPrice)}</span>
+        {qty > 1 && <span className="field-hint">For all {qty} units</span>}
+      </div>
+      <div className="figure-row">
+        <div className="figure">
+          <span className="figure-label">Estimated cost (AED)</span>
+          <span className="figure-value sm">{fmtAed(p.totalCost)}</span>
+        </div>
+        <div className="figure">
+          <span className="figure-label">Markup</span>
+          <span className="figure-value sm">{markupLabel(p.markups)}</span>
+        </div>
+      </div>
+      <div className="item-profit-figures">
+        <div className={`profit-figure highlight ${tone}`}>
+          <span className="figure-label">Estimated profit (AED)</span>
+          <span className="profit-value" data-testid="item-profit">{signed(p.profit)}</span>
+        </div>
+        <div className={`profit-figure highlight ${tone}`}>
+          <span className="figure-label">Profit margin</span>
+          <span className="profit-value" data-testid="item-margin">{marginLabel(p.marginPercent)}</span>
+        </div>
+      </div>
+      {p.profit < 0 && <div className="pill pill-red pill-block">Cost is higher than the selling price for this item.</div>}
+
+      <div className="calc">
+        {rows.length === 0 && <div className="calc-row"><span className="calc-label muted">No costs entered yet</span></div>}
+        {rows.map((c) => (
+          <div className="calc-row" key={c.key}>
+            <span className="calc-label">{c.label}</span>
+            <span className="calc-value">{fmtAed(p.costs[c.key])}</span>
+          </div>
+        ))}
+        <div className="calc-row"><span className="calc-label strong">Total estimated cost</span><span className="calc-value">{fmtAed(p.totalCost)}</span></div>
+      </div>
+      <div className="calc">
+        <div className="calc-row"><span className="calc-label">Markup on profile</span><span className="calc-value">{signed(p.markupAmount)}</span></div>
+        {p.dualColour !== 0 && <div className="calc-row"><span className="calc-label">Dual colour</span><span className="calc-value">{signed(p.dualColour)}</span></div>}
+        {p.marginChangeAmount !== 0 && <div className="calc-row"><span className="calc-label">Margin change</span><span className="calc-value">{signed(p.marginChangeAmount)}</span></div>}
+        {p.discount !== 0 && <div className="calc-row"><span className="calc-label">Discount</span><span className="calc-value">{signed(-p.discount)}</span></div>}
+        {p.priceReductions !== 0 && <div className="calc-row"><span className="calc-label">Negative other charges</span><span className="calc-value">{signed(-p.priceReductions)}</span></div>}
+        <div className="calc-row"><span className="calc-label strong">Estimated profit</span><span className="calc-value">{signed(p.profit)}</span></div>
+      </div>
+      <p className="muted small">Estimated for this line item only. The whole project's figures are in Saved estimates.</p>
+    </div>
+  )
+}

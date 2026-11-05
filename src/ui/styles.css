@@ -374,3 +374,16 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .profit-table tbody tr { cursor: default; }
 .profit-table tfoot td { border-bottom: 0; font-weight: 600; }
 .profit-table .profit-sub td:first-child { padding-left: 16px; }
+
+/* Line item Summary tabs */
+.summary-tabs { display: flex; gap: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 3px; }
+.summary-tab { height: 32px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: var(--nav-text); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.summary-tab:hover { color: #fff; }
+.summary-tab[aria-selected='true'] { background: #fff; color: var(--blue); }
+.summary .card-head { align-items: center; flex-wrap: wrap; }
+.summary-item-name { font-size: 13px; color: var(--nav-text); width: 100%; }
+.item-profit { display: flex; flex-direction: column; gap: 16px; }
+.item-profit-figures { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.item-profit-figures .profit-figure { padding: 12px 14px; }
+.item-profit-figures .profit-value { font-size: 22px; }
+.item-profit .calc-label.strong { font-weight: 600; }
