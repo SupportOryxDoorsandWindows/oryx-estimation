@@ -19,7 +19,7 @@ A standalone web app where estimators enter a line item (product, dimensions, gl
 | Qty | Integer, default 1 |
 | Supplier price | One field, with currency set by origin: AED/m² (Fusion), GBP (Origin), EUR (Hyline, OTIF, Inotherm, Kobbe), or a lump AED supplier quote |
 | Markup | Default from the pricing rule; editable by permitted users only |
-| Glass rate (AED/m²), thickness (mm), glazing spec | |
+| Glass rate (AED/m²), thickness (mm), glazing spec | Thickness defaults to 32 mm on a new line item (Production, 5 Nov 2026); editable. |
 | Bonding charges, freight, other charges, installation, equipment rental | AED. Other charges may be negative. |
 | Accessories | A list of rows, each with a description and an AED cost |
 | Discount | Mode: fixed amount or percentage. Editing one calculates the other. |

@@ -16,7 +16,7 @@ export function blankLineItem(): LineItemInput {
     doorPricing: null,
     markup: 2.85,
     glassRate: 0,
-    glassThicknessMm: 0,
+    glassThicknessMm: 32,
     glazingSpec: '',
     glassType: '',
     dualColour: false,

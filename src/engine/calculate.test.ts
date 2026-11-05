@@ -54,6 +54,10 @@ describe('CW01.1 golden test', () => {
 })
 
 describe('engine rules', () => {
+  it('a new line item starts with 32 mm glass', () => {
+    expect(blankLineItem().glassThicknessMm).toBe(32)
+  })
+
   const base = cw011()
 
   it('multiplies the rate by qty for the amount', () => {
