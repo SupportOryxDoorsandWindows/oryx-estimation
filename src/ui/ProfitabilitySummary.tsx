@@ -9,7 +9,7 @@ import {
  * worked out from the same line-item results as the Line items table, so they update with
  * every change. Estimated only: actual project costs are kept apart.
  */
-export function ProfitabilitySummary({ p, onExport }: { p: Profitability; onExport: () => void }) {
+export function ProfitabilitySummary({ p, onExport, title }: { p: Profitability; onExport: () => void; title?: string }) {
   const loss = p.profit < 0
   const tone = p.marginPercent === null ? '' : loss ? 'neg' : 'pos'
   const signed = (v: number) => (v < 0 ? `−${fmtAed(-v)}` : fmtAed(v))
@@ -18,7 +18,7 @@ export function ProfitabilitySummary({ p, onExport }: { p: Profitability; onExpo
     <section className="card profit" aria-labelledby="sec-profit">
       <div className="card-head">
         <h2 id="sec-profit">Project Profitability Summary</h2>
-        <span className="card-aside">Estimated · {p.itemCount} {p.itemCount === 1 ? 'line item' : 'line items'}</span>
+        <span className="card-aside">{title ? `${title} · ` : ''}Estimated · {p.itemCount} {p.itemCount === 1 ? 'line item' : 'line items'}</span>
       </div>
       <div className="card-body">
         <div className="profit-figures">

@@ -56,6 +56,8 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
   // Every visit starts with a blank estimate; saved ones open from Saved estimates.
   const [current, setCurrent] = useState<Estimate>(newEstimate)
   const [itemIndex, setItemIndex] = useState(0)
+  // Saved estimates: the one clicked shows its Project Profitability Summary below the list.
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [messageTone, setMessageTone] = useState<'ok' | 'warn' | 'error'>('ok')
   const notify = (text: string, tone: 'ok' | 'warn' | 'error' = 'ok') => { setMessage(text); setMessageTone(tone) }
@@ -63,12 +65,17 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
   useEffect(() => saveRules(rules), [rules])
   useEffect(() => saveProducts(products), [products])
   useEffect(() => saveEstimates(estimates), [estimates])
+  // Bring the clicked estimate's summary into view (the list can be long).
+  useEffect(() => {
+    if (selectedId) document.getElementById('sec-profit')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [selectedId])
 
   const item = current.items[itemIndex] ?? current.items[0]
   const results = current.items.map((i) => calculateLineItem(i, rules))
   const total = results.reduce((t, r) => t + r.amount, 0)
   // Worked out from the same results as the Line items table, so it follows every change at once.
   const profitability = projectProfitability(current.items, results)
+  const selected = estimates.find((e) => e.id === selectedId) ?? null
   const hasZoho = current.items.some((i) => i.zohoAmount != null)
 
   const go = (v: View) => { setView(v); setMenuOpen(false) }
@@ -114,13 +121,13 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
     }
   }
 
-  const exportProfitability = async () => {
-    const safe = (s: string) => s.replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60)
-    const proposal = String(current.details.proposalNumber ?? '').trim()
-    const name = safe(proposal || projectNameOf(current.name, current.details)) || 'estimate'
+  const exportProfitability = async (e: Estimate) => {
+    const safe = (t: string) => t.replace(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60)
+    const proposal = String(e.details?.proposalNumber ?? '').trim() || proposalRef(e)
+    const name = safe(proposal || projectNameOf(e.name, e.details)) || 'estimate'
     try {
       await downloadWorkbook(`profitability-${name}-${new Date().toISOString().slice(0, 10)}.xlsx`, buildProfitabilityWorkbook({
-        name: current.name, details: current.details, items: current.items, rules, products,
+        name: e.name, details: e.details, items: e.items.map(normaliseItem), rules, products,
         exportedOn: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       }))
     } catch (err) {
@@ -294,7 +301,8 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
 
               <LineItemForm key={`${current.id}-${itemIndex}`} item={item} onChange={updateItem} rules={rules} products={products} role={role} />
 
-              <ProfitabilitySummary p={profitability} onExport={exportProfitability} />
+              {/* Shown once the estimate has a price; a blank estimate has nothing to summarise. */}
+              {profitability.sellingPrice > 0 && <ProfitabilitySummary p={profitability} onExport={() => exportProfitability(current)} />}
             </>
           )}
 
@@ -311,21 +319,22 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
                   <button type="button" className="btn btn-primary" onClick={exportAll}>Export Excel</button>
                 </div>
               </header>
-              <Card title="Estimates" aside="Saved in this browser only">
+              <Card title="Estimates" aside="Saved in this browser only · click an estimate to see its profitability">
                 {estimates.length === 0 ? <p className="muted">No saved estimates yet. Use Save estimate on the Estimate screen.</p> : (
                   <div className="table-wrap">
                     <table className="table">
                       <thead><tr><th>Name</th><th>Proposal reference</th><th>Quote status</th><th className="num">Items</th><th>Updated</th><th className="num">Total (AED)</th><th /></tr></thead>
                       <tbody>
                         {estimates.map((e) => (
-                          <tr key={e.id}>
+                          <tr key={e.id} className={e.id === selectedId ? 'selected' : ''} aria-selected={e.id === selectedId}
+                            onClick={() => setSelectedId(e.id === selectedId ? null : e.id)}>
                             <td className="strong">{e.name}</td>
                             <td className="nowrap">{proposalRef(e) || <span className="muted">—</span>}</td>
                             <td className="nowrap">{String(e.details?.quoteStatus || '') || <span className="muted">—</span>}</td>
                             <td className="num">{e.items.length}</td>
                             <td>{new Date(e.updatedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}</td>
                             <td className="num strong">{fmtAed(e.items.reduce((t, i) => t + calculateLineItem(normaliseItem(i), rules).amount, 0))}</td>
-                            <td className="num nowrap">
+                            <td className="num nowrap" onClick={(ev) => ev.stopPropagation()}>
                               <button type="button" className="btn btn-sm" onClick={() => open(e)}>Open</button>{' '}
                               <button type="button" className="btn btn-sm" onClick={() => revise(e)}>Create revision</button>
                               <button type="button" className="link link-gap" onClick={() => setEstimates(estimates.filter((x) => x.id !== e.id))}>Delete</button>
@@ -337,6 +346,14 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
                   </div>
                 )}
               </Card>
+
+              {selected && (
+                <ProfitabilitySummary
+                  title={selected.name}
+                  p={projectProfitability(selected.items.map(normaliseItem), selected.items.map((i) => calculateLineItem(normaliseItem(i), rules)))}
+                  onExport={() => exportProfitability(selected)}
+                />
+              )}
             </>
           )}
 
