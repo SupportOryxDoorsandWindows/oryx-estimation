@@ -7,7 +7,7 @@ import type { LineItemInput, PricingRules, Product } from './engine/types'
 import { buildWorkbook, parseProducts, parseWorkbook } from './io/workbook'
 import { buildProfitabilityWorkbook, projectNameOf } from './io/profitabilityWorkbook'
 import { downloadWorkbook, pickWorkbook } from './ui/excelFile'
-import type { SignedInUser } from './auth/supabase'
+import type { SignedInUser } from './auth/catalyst'
 import { Card } from './ui/fields'
 import { Icon, type IconName } from './ui/icons'
 import { LineItemForm } from './ui/LineItemForm'
@@ -115,7 +115,7 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
 
   const exportAll = async () => {
     try {
-      await downloadWorkbook(`oryx-estimation-${new Date().toISOString().slice(0, 10)}.xlsx`, buildWorkbook(estimates, rules, products))
+      await downloadWorkbook(`oryx-estimations-${new Date().toISOString().slice(0, 10)}.xlsx`, buildWorkbook(estimates, rules, products))
     } catch (err) {
       notify(`Export failed: ${(err as Error).message}`, 'error')
     }
@@ -176,7 +176,7 @@ export default function App({ user, onSignOut }: { user: SignedInUser; onSignOut
             <div className="brand-mark">O</div>
             <div>
               <div className="brand-name">ORYX</div>
-              <div className="brand-sub">Estimation</div>
+              <div className="brand-sub">Estimations</div>
             </div>
             <button type="button" className="menu-btn" aria-expanded={menuOpen} aria-controls="nav-links" onClick={() => setMenuOpen(!menuOpen)}>
               <Icon name="menu" /> Menu

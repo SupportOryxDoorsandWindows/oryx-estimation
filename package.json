@@ -1,5 +1,5 @@
 {
-  "name": "oryx-estimation",
+  "name": "oryx-estimations",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -10,7 +10,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.116.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "read-excel-file": "9.3.12",

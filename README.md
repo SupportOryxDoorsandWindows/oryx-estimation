@@ -1,4 +1,4 @@
-# Oryx Estimation System
+# Oryx Estimations
 
 Standalone web app for estimating aluminium door, window and curtain wall prices. See `CLAUDE.md` and `SPEC.md`.
 
@@ -25,11 +25,15 @@ Settings edits and saved estimates persist in the browser (localStorage). Use Sa
 ## Known gaps
 
 - Rules match on the product's Business Unit. 39 Fusion products (C50, C60, D44, F56, T60 and others) are not on the pricing sheet, so they use "Anything else" (manual cost, markup 2.5) until rules are added.
-- The Estimator/Manager switch controls markup editing. It is not access control; v1 has no login.
+- The Estimator/Manager switch controls markup editing. It is not access control.
 - The §4 open rules show an "unconfirmed" badge until the business confirms them.
 
-## Temporary hosting (GitHub Pages)
+## Hosting (Zoho Catalyst)
 
-`.github/workflows/pages.yml` runs the tests, builds and deploys on every push to `main`.
-Enable it once in **Settings → Pages → Source: GitHub Actions**.
-A Pages site is public, even from a private repo, so anyone with the link can see the pricing rules.
+Slate (app `Oryx-Estimations`) builds and deploys the app from this repository. The server function is in `functions/estimation_zoho/`.
+
+To release the function, run `npm install --omit=dev` in its folder, zip the folder's contents without the tests, and upload the bundle in the Catalyst console.
+
+The function needs one environment variable, `ZOHO_MCP_URL`. Set it in the console; never commit it.
+
+Sign-in uses Catalyst's scripts, which load only on Slate, so `npm run dev` cannot sign in.

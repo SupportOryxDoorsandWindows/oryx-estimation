@@ -16,9 +16,9 @@ Zoho is the source of truth: the app does not store deals, proposals or BOQ line
 | Creator reports | `All_Proposals2` (proposals), `BOQ_Summary` (BOQ lines) |
 | Creator forms | `Add_Proposal` (proposals), `BOQ` (BOQ lines) |
 | Proposal ↔ BOQ link | `Proposal_Reference`, a lookup field |
-| Sign-in | Supabase, same project as the Fleet app |
+| Sign-in | Catalyst Authentication, embedded login, public signup off |
 | Who revises and submits | Sales support (estimator) |
-| Hosting | GitHub Pages for now; Zoho data stays behind sign-in on the server |
+| Hosting | Zoho Catalyst: Slate for the app, Functions for the server; Zoho data stays behind sign-in on the server |
 
 ### Proposal statuses (`Quote_Status`)
 | Status | Meaning |
@@ -98,8 +98,8 @@ Observed: on an accepted proposal (P266308R5) the original lines have an empty `
 
 ## Built
 
-- **Server function** `estimation-zoho` (Supabase Edge Function, source in `supabase/functions/estimation-zoho/`). Deployed for now to the Fleet app's Supabase project; reads the `ZOHO_MCP_URL` secret; answers only active Admins (`profiles`). Read-only actions: `searchDeals`, `dealDetails`, `dealProposals`, `proposalBoq`.
-- **Admin sign-in** in the StockFlow design, with the Fleet app's accounts.
+- **Server function** `estimation_zoho` (Catalyst Advanced I/O, source in `functions/estimation_zoho/`). Reads the `ZOHO_MCP_URL` environment variable, set in the console; answers only active App Administrators. Read-only actions: `me`, `searchDeals`, `dealDetails`, `dealProposals`, `proposalBoq`.
+- **Admin sign-in** in the StockFlow design, with Catalyst Authentication.
 - **Revisions page, live (read-only)**: search CRM deals, list the deal's Creator proposals (only "Accepted by the Client" can be revised), load the BOQ lines from `BOQ_Summary` (`Proposal_Reference == <proposal ID>`). Lines are priced through the same mapping as the BOQ Excel import. Submit to Zoho is not switched on yet.
 - **Deal Name auto-fill** in Proposal details. From CRM: Deal Name, Contact Name, Company Name, Deal Owner and email, Stage, Closing Date, Order Value (Amount), Address, Location_Tag, order_number, Proposal_No. From the deal's latest Creator proposal: Deal_Owner_Number, Project_Name, Proposal_Reference_Number. Only non-empty Zoho values are written; filled fields are tagged "From CRM" / "From Creator".
 

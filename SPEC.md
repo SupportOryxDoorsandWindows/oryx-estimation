@@ -1,4 +1,4 @@
-# Oryx Estimation System – Calculation Spec
+# Oryx Estimations – Calculation Spec
 
 Date: 29 October 2026
 Owner: Production, Oryx Doors & Windows

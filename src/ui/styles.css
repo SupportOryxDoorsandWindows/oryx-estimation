@@ -313,8 +313,7 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .gate-card { align-self: center; justify-self: center; width: 100%; max-width: 396px; padding: 48px 24px; }
 .gate-card h2 { font-weight: 700; font-size: 28px; margin: 0; }
 .gate-sub { font-size: 15px; color: var(--muted); margin: 2px 0 22px; }
-.gate-form { display: flex; flex-direction: column; gap: 18px; }
-.gate-form input { height: 50px; }
+.gate-login iframe { display: block; width: 100%; height: 420px; border: 0; }
 .gate-submit { height: 52px; font-size: 15px; font-weight: 700; width: 100%; margin-top: 4px; }
 .gate-status { min-height: 20px; margin-top: 14px; font-size: 13px; color: var(--red); }
 .gate-foot { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }

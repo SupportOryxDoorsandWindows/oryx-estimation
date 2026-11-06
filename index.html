@@ -10,10 +10,13 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>Oryx Estimation</title>
+    <title>Oryx Estimations</title>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Catalyst Authentication. This order is required: init.js needs the Web SDK. -->
+    <script src="https://static.zohocdn.com/catalyst/sdk/js/4.6.2/catalystWebSDK.js"></script>
+    <script src="/__catalyst/sdk/init.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

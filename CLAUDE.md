@@ -1,4 +1,4 @@
-# Oryx Estimation System
+# Oryx Estimations
 
 Standalone web app for estimating aluminium door, window and curtain wall prices at Oryx Doors & Windows (Dubai).
 
@@ -9,9 +9,9 @@ Standalone web app for estimating aluminium door, window and curtain wall prices
 - `data/accessories.json`: the standard accessories list. They have no set prices; estimators enter each price by hand.
 
 ## Stack
-- Vite + React + TypeScript, static site (GitHub Pages).
-- Sign-in: Supabase Auth, for now the Fleet app's (Vehicle Management System) project and accounts; only active Admins (`profiles`) can use the app (`src/auth/`). The sign-in screen follows Oryx StockFlow's design.
-- Zoho: only through the `estimation-zoho` Supabase Edge Function (`supabase/functions/`), which holds the Zoho MCP link as the `ZOHO_MCP_URL` secret and checks the caller is an Admin. Never put the link in code or the browser.
+- Vite + React + TypeScript, hosted on Zoho Catalyst Slate (app `Oryx-Estimations`, project `Estimation`).
+- Sign-in: Catalyst Authentication, embedded login, public signup off (`src/auth/`). Only active App Administrators can use the app; the server function decides. Catalyst draws the email and password form in an iframe. The sign-in screen follows Oryx StockFlow's design.
+- Zoho: only through the `estimation_zoho` Catalyst Advanced I/O function (`functions/estimation_zoho/`), which holds the Zoho MCP link as the `ZOHO_MCP_URL` environment variable, set in the console, and checks the caller is an Admin. Never put the link in code or the browser. Slate and Functions are on different domains, so the browser calls the full URL in `VITE_ZOHO_API_URL` (`.env.production`), and Authorized Domains supplies the CORS headers: do not set them in the function.
 - Pricing engine as pure functions in `src/engine/`, with no UI code in that folder.
 - Settings and pricing rules in `data/pricing-rules.json`, editable on a Settings screen.
 - Door price chart (`doorChart` in `data/pricing-rules.json`, maths in `src/engine/doorChart.ts`): AED/m² by bilinear interpolation over the production costing grid, from the Single Door Order Estimator workbook. Door products priced in AED (AED/m² or manual rule) take their supplier price from it automatically (there is no manual switch); GBP/EUR doors keep their supplier quote and show the chart for reference only. With the chart, Profile reference (locked) is the chart rate and Pricing (editable) prices the item.

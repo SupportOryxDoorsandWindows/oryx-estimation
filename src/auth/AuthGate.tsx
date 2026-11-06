@@ -1,40 +1,35 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { SignIn } from './SignIn'
-import { supabase, type SignedInUser } from './supabase'
+import { isSignedIn, signOut, type SignedInUser } from './catalyst'
+import { NoAccess, SignIn } from './SignIn'
+import { currentUser } from '../zoho/crm'
 
 type State =
   | { kind: 'loading' }
   | { kind: 'signedOut'; message?: string }
+  | { kind: 'noAccess' }
   | { kind: 'signedIn'; user: SignedInUser }
 
-/** Only active Admins of the Fleet app's accounts may use the app for now. */
-async function checkAdmin(userId: string): Promise<boolean> {
-  const { data } = await supabase.from('profiles').select('role, active').eq('id', userId).maybeSingle()
-  return !!(data && data.active && data.role === 'admin')
-}
+const UNAVAILABLE = 'Could not reach the sign-in service. Check your connection and try again.'
 
+/** Only active App Administrators may use the app for now. The server function decides. */
 export function AuthGate({ children }: { children: (user: SignedInUser, signOut: () => void) => ReactNode }) {
   const [state, setState] = useState<State>({ kind: 'loading' })
 
   useEffect(() => {
     let live = true
-    const settle = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
-      if (!session) return live && setState((s) => (s.kind === 'signedOut' ? s : { kind: 'signedOut' }))
-      if (await checkAdmin(session.user.id)) {
-        if (live) setState({ kind: 'signedIn', user: { email: session.user.email ?? '' } })
-      } else {
-        await supabase.auth.signOut()
-        if (live) setState({ kind: 'signedOut', message: 'This app is open to Admins only for now. Ask your Admin for access.' })
-      }
+    const settle = async (): Promise<State> => {
+      if (!(await isSignedIn())) return { kind: 'signedOut' }
+      const me = await currentUser()
+      return me.admin ? { kind: 'signedIn', user: { email: me.email } } : { kind: 'noAccess' }
     }
-    supabase.auth.getSession().then(({ data }) => settle(data.session)).catch(() => live && setState({ kind: 'signedOut' }))
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') settle(session)
-    })
-    return () => { live = false; sub.subscription.unsubscribe() }
+    settle()
+      .catch((): State => ({ kind: 'signedOut', message: UNAVAILABLE }))
+      .then((next) => { if (live) setState(next) })
+    return () => { live = false }
   }, [])
 
   if (state.kind === 'loading') return <div className="gate-loading">Loading…</div>
   if (state.kind === 'signedOut') return <SignIn key={state.message ?? ''} initialMessage={state.message} />
-  return <>{children(state.user, () => { void supabase.auth.signOut() })}</>
+  if (state.kind === 'noAccess') return <NoAccess />
+  return <>{children(state.user, () => { void signOut() })}</>
 }
